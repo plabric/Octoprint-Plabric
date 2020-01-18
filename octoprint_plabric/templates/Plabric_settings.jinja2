@@ -1,0 +1,79 @@
+<script>
+    var plabric_variables = {
+        configurated : '{{ plugin_Plabric_configurated }}' == 'True',
+        config_cancelled: '{{ plugin_Plabric_config_cancelled }}' == 'True',
+        docker_available: '{{ plugin_Plabric_docker_available }}' == 'True',
+        docker_running : '{{ plugin_Plabric_docker_running }}' == 'True',
+        installing : '{{ plugin_Plabric_installing }}' == 'True',
+        install_progress: {{ plugin_Plabric_install_progress }},
+        temp_token : '{{ plugin_Plabric_temp_token|escape }}' != 'None',
+        socket_connected: '{{ plugin_Plabric_socket_connected }}' == 'True',
+        os : '{{ plugin_Plabric_os|escape }}'
+    };
+</script>
+
+<h4>Plabric</h4>
+
+<div data-bind="visible: !docker_running()">
+    <div data-bind="visible: !docker_available()">
+        <p>{{ _("Plabric Plugin is not running because we haven't detect Docker in your system.") }}</p>
+        <p>{{ _("Visit how to enable docker on your system:") }} <a target="_blank" href="https://plabric.com/docker-install-tutorial/" style="color: #00A69A">{{ _("Install Docker") }}</a></p>
+    </div>
+
+     <div data-bind="visible: docker_available() && !installing()">
+         <p>{{ _("Install plugin requirements") }}</p>
+         <a class="btn btn-primary" data-bind="click: run_docker">{{ _("Install Plugin") }}</a>
+     </div>
+
+    <div data-bind="visible: installing()">
+        <p>{{ _("Installing plugin requirements") }}</p>
+        <p>{{ _("The installation process may take several minutes. Please wait until process finish.") }}</p>
+        <p>{{ _("Downloading requirements...") }} <span data-bind="text: install_progress"></span>%</p>
+        <div class="progress">
+            <div class="progress-bar progress-bar-striped active" role="progressbar"
+                 aria-valuemin="0" aria-valuemax="100" data-bind="attr: { 'aria-valuenow': install_progress }, style: { width: progress_width }">
+                <span data-bind="text: install_progress"></span>%
+            </div>
+        </div>
+        <br>
+    </div>
+</div>
+
+<div data-bind="visible: docker_running() && !socket_connected()">
+    <p>{{ _("Plabric Plugin is installed but the connection can't be established.") }}</p>
+    <a class="btn btn-primary" data-bind="click: reconnect">{{ _("Retry connection") }}</a>
+</div>
+
+
+<div data-bind="visible: docker_running() && socket_connected() && !configurated()">
+
+    <div data-bind="visible: !temp_token()">
+        <p>{{ _("Control and monitoring your printer with Plabric") }}</p>
+        <ul>
+            <li> {{ _("Download Plabric app on your phone.") }}</li>
+            <li> {{ _("Create an account.") }}</li>
+            <li> {{ _("Create new printer profile and follow the steps provided in the app for connect your printer.") }}</li>
+            <li> {{ _("Finally come back and click the button below.") }}</li>
+        </ul>
+        <a class="btn btn-primary" data-bind="click: login">{{ _("Connect with my Plabric Account") }}</a>
+    </div>
+
+    <div data-bind="visible: temp_token()">
+        <p>{{ _("Scan this QR with Plabric for configure the connection.") }}</p>
+        <p>{{ _("You can find the scanner under printer connections. Follow the steps in the app for connect.") }}</p>
+        <div data-bind="qrcode: {text: temp_token, size: 180}"></div>
+        <a class="btn btn-danger" data-bind="click: cancel_config">{{ _("Cancel") }}</a>
+    </div>
+</div>
+
+<div data-bind="visible: docker_running() && socket_connected() && configurated()">
+    <p>{{ _("Octroprint is connected and ready for use with Plabric.") }}</p>
+    <p>{{ _("You can disable Plabric access in the printer settings section in Plabric app or clicking the button below.") }}</p>
+    <br>
+    <a class="btn btn-danger" data-bind="click: disable">{{ _("Disable Plabric Plugin") }}</a>
+</div>
+
+
+
+
+

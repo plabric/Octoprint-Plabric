@@ -1,0 +1,5 @@
+include README.md
+recursive-include octoprint_plabric/templates *
+recursive-include octoprint_plabric/translations *
+recursive-include octoprint_plabric/static *
+recursive-include octoprint_plabric/bin *
