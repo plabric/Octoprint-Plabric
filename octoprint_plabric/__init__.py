@@ -254,7 +254,7 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 
 				# version check: github repository
 				type="github_release",
-				user="Plabric",
+				user="plabric",
 				repo="OctoPrint-Plabric",
 				current=self._plugin_version,
 
