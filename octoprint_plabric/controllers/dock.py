@@ -4,7 +4,7 @@ from enum import Enum
 
 import docker
 import requests
-from Queue import Queue
+import subprocess
 
 from octoprint_plabric import config
 from octoprint_plabric.controllers import download as _download
@@ -13,6 +13,9 @@ from octoprint_plabric.controllers import utils as _utils
 
 class DockerState(Enum):
 	DOCKER_NOT_AVAILABLE = 'not_installed',
+	DOCKER_INSTALLING = 'docker_installing',
+	DOCKER_INSTALL_ERROR = 'docker_install_error',
+	REBOOT_NEED = 'reboot_need'
 	READY = 'ready'
 	DOWNLOADING = 'downloading',
 	INSTALLING_IMAGE = 'installing_image',
@@ -79,16 +82,52 @@ class DockerController:
 		self._plugin = plugin
 		self._logger = self._plugin.get_logger()
 		self._client = docker.from_env()
+		self._install_progress = 0
 		self._download_progress = 0
 		self._state = None
 		self.set_new_state(DockerState.DOCKER_NOT_AVAILABLE if self._client is None else DockerState.READY)
 		self.check_still_running()
 		self.check_new_version()
 
+	def install(self, password, error_callback):
+		self.set_new_state(DockerState.DOCKER_INSTALLING)
+		self.install_progress(10)
+		succeed = self.apply_command(cmd='echo {} | sudo -S {}'.format(password, 'sudo apt-get install curl -y'), error_callback=error_callback)
+		if not succeed:
+			return
+		self.install_progress(33)
+		succeed = self.apply_command(cmd='curl -sSL https://get.docker.com | sh', error_callback=error_callback)
+		if not succeed:
+			return
+		self.install_progress(66)
+		succeed = self.apply_command(cmd='echo {} | sudo -S {}'.format(password, 'sudo usermod -aG docker $USER'), error_callback=error_callback)
+		if not succeed:
+			return
+		self.install_progress(100)
+		self.set_new_state(DockerState.REBOOT_NEED)
+
+	def apply_command(self, cmd, error_callback):
+		p = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		output, err = p.communicate()
+		self.log("Ouput: %s" % output)
+		if p.returncode and err and error_callback:
+			self.log("Error %s" % err)
+			self.set_new_state(DockerState.DOCKER_INSTALL_ERROR)
+			error_callback(err)
+			return False
+		return True
+
+	def reboot(self, password):
+		self.log('Reboot called')
+		subprocess.call('echo {} | sudo -S {}'.format(password, 'sudo reboot'), shell=True)
+
 	def get_image(self):
 		try:
 			image = self._client.images.get(config.DOCKER_IMAGE_NAME)
 		except docker.errors.NotFound as e:
+			return None
+		except requests.exceptions.ConnectionError:
+			self.set_new_state(DockerState.DOCKER_NOT_AVAILABLE)
 			return None
 		return image
 
@@ -96,6 +135,9 @@ class DockerController:
 		try:
 			container = self._client.containers.get(config.DOCKER_CONTAINER_NAME)
 		except docker.errors.NotFound as e:
+			return None
+		except requests.exceptions.ConnectionError:
+			self.set_new_state(DockerState.DOCKER_NOT_AVAILABLE)
 			return None
 		return container
 
@@ -205,6 +247,14 @@ class DockerController:
 
 	def get_download_progress(self):
 		return self._download_progress
+
+	def install_progress(self, progress):
+		self.log('Install progress: ' + str(progress))
+		self._install_progress = progress
+		self._plugin.update_ui_status()
+
+	def get_install_progress(self):
+		return self._install_progress
 
 	def clean_downloads_folder(self):
 		if os.path.exists(DOWNLOAD_DIRECTORY):

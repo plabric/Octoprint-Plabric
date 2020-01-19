@@ -16,9 +16,17 @@ $(function() {
         self.docker_available = ko.observable(plabric_variables.docker_available);
         self.socket_connected = ko.observable(plabric_variables.socket_connected);
         self.os = ko.observable(plabric_variables.os);
+        self.docker_installing = ko.observable(plabric_variables.docker_installing);
+        self.docker_install_error = ko.observable(plabric_variables.docker_install_error);
+        self.reboot_need = ko.observable(plabric_variables.reboot_need);
         self.installing = ko.observable(plabric_variables.installing);
+        self.installing = ko.observable(plabric_variables.installing);
+        self.docker_install_progress = ko.observable(plabric_variables.docker_install_progress);
+        self.docker_install_progress_width = ko.observable('0px');
         self.install_progress = ko.observable(plabric_variables.install_progress);
         self.progress_width = ko.observable('0px');
+        self.sudo_data = ko.observable(plabric_variables.sudo_data);
+        self.error = ko.observable(plabric_variables.error);
 
         self.login = function () {
             $.ajax({
@@ -59,9 +67,15 @@ $(function() {
                 self.docker_running(data.docker_running);
                 self.socket_connected(data.socket_connected);
                 self.os(data.os);
+                self.docker_installing(data.docker_installing);
+                self.docker_install_error(data.docker_install_error);
+                self.reboot_need(data.reboot_need);
                 self.installing(data.installing);
+                self.docker_install_progress(data.docker_install_progress);
+                self.docker_install_progress_width(self.docker_install_progress().toString() + '%');
                 self.install_progress(data.install_progress);
                 self.progress_width(self.install_progress().toString() + '%');
+                self.error(data.error);
 
                 if(self.config_cancelled()){
                     self.cancel_config();
@@ -108,6 +122,54 @@ $(function() {
                 }
             });
         };
+
+        self.to_sudo_data = function () {
+            self.sudo_data(true);
+        };
+
+        self.cancel_install_docker = function () {
+            self.sudo_data(false);
+            $.ajax({
+                type: "GET",
+                url: "/plugin/Plabric/install_docker_cancel",
+                success: function (data) {},
+                error: function (error) {
+                    console.error("Plabric: Unable to connect");
+                }
+            });
+        };
+
+        self.install_docker = function () {
+            var pass = $("#pass").val();
+            $("#pass").val("");
+            if (pass === undefined || pass.length === 0){
+                self.error("Add your admin system password");
+                return
+            }
+            self.error("");
+            self.sudo_data(false);
+            $.ajax({
+                type: "POST",
+                url: "/plugin/Plabric/install_docker",
+                data: { pass: pass} ,
+                success: function (data) {},
+                error: function (error) {
+                    console.error("Plabric: Unable to connect");
+                }
+            });
+        };
+
+         self.reboot = function () {
+            $.ajax({
+                type: "GET",
+                url: "/plugin/Plabric/reboot",
+                success: function (data) {},
+                error: function (error) {
+                    console.error("Plabric: Unable to run docker");
+                }
+            });
+        };
+
     }
 
     OCTOPRINT_VIEWMODELS.push({

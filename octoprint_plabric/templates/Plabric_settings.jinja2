@@ -4,26 +4,73 @@
         config_cancelled: '{{ plugin_Plabric_config_cancelled }}' == 'True',
         docker_available: '{{ plugin_Plabric_docker_available }}' == 'True',
         docker_running : '{{ plugin_Plabric_docker_running }}' == 'True',
+        docker_installing : '{{ plugin_Plabric_docker_installing }}' == 'True',
+        docker_install_error: '{{ plugin_Plabric_docker_install_error }}' == 'True',
+        reboot_need: '{{ plugin_Plabric_reboot_need }}' == 'True',
         installing : '{{ plugin_Plabric_installing }}' == 'True',
+        docker_install_progress: {{ plugin_Plabric_docker_install_progress }},
         install_progress: {{ plugin_Plabric_install_progress }},
         temp_token : '{{ plugin_Plabric_temp_token|escape }}' != 'None',
         socket_connected: '{{ plugin_Plabric_socket_connected }}' == 'True',
-        os : '{{ plugin_Plabric_os|escape }}'
+        os : '{{ plugin_Plabric_os|escape }}',
+        sudo_data: false,
+        error: '{{ plugin_Plabric_error }}'
     };
 </script>
 
 <h4>Plabric</h4>
 
 <div data-bind="visible: !docker_running()">
-    <div data-bind="visible: !docker_available()">
-        <p>{{ _("Plabric Plugin is not running because we haven't detect Docker in your system.") }}</p>
-        <p>{{ _("Visit how to enable docker on your system:") }} <a target="_blank" href="https://plabric.com/docker-install-tutorial/" style="color: #00A69A">{{ _("Install Docker") }}</a></p>
+    <div data-bind="visible: !docker_available() && !sudo_data() && !docker_installing() && !docker_install_error() && !reboot_need()">
+        <div data-bind="visible: os() == 'Linux'">
+            <p>{{ _("Plabric Plugin is not running because we haven't detect Docker on your system.") }}</p>
+            <p>{{ _("Install docker on your system clicking the button below:") }}</p>
+            <a class="btn btn-primary" data-bind="click: to_sudo_data">{{ _("Install docker") }}</a>
+            <p style="margin-top: 20px">{{ _("Or do it mannually visiting how to install docker on your system:") }} <a target="_blank" href="https://plabric.com/docker-install-tutorial/" style="color: #00A69A">{{ _("Install Docker") }}</a></p>
+        </div>
+        <div data-bind="visible: os() != 'Linux'">
+            <p>{{ _("Plabric Plugin is not running because we haven't detect Docker in your system.") }}</p>
+            <p>{{ _("Visit how to enable docker on your system:") }} <a target="_blank" href="https://plabric.com/docker-install-tutorial/" style="color: #00A69A">{{ _("Install Docker") }}</a></p>
+        </div>
     </div>
 
-     <div data-bind="visible: docker_available() && !installing()">
-         <p>{{ _("Install plugin requirements") }}</p>
-         <a class="btn btn-primary" data-bind="click: run_docker">{{ _("Install Plugin") }}</a>
-     </div>
+    <div data-bind="visible: !docker_available() && sudo_data()">
+        <p>{{ _("You have to provide admin rights (sudo) for install Docker on your system.") }}</p>
+        <input id="pass" autocomplete="nope" type="password" placeholder="Admin system password sudo">
+        <p style="color:red" data-bind="text: error"></p>
+        <p style="font-size: 14px">{{ _("For raspberry default password: raspberry") }}</p>
+        <a class="btn btn-danger" data-bind="click: cancel_install_docker">{{ _("Cancel") }}</a>
+        <a class="btn btn-primary" data-bind="click: install_docker">{{ _("Install docker") }}</a>
+    </div>
+
+    <div data-bind="visible: !docker_available() && (docker_installing() || docker_install_error())">
+        <div data-bind="visible: !docker_install_error()">
+            <p>{{ _("Installing docker...") }}</p>
+            <p>{{ _("The installation process may take several minutes. Please wait until process finish.") }}</p>
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped active" role="progressbar"
+                     aria-valuemin="0" aria-valuemax="100" data-bind="attr: { 'aria-valuenow': docker_install_progress }, style: { width: docker_install_progress_width }">
+                    <span data-bind="text: docker_install_progress"></span>%
+                </div>
+            </div>
+        </div>
+        <div data-bind="visible: docker_install_error()">
+            <p data-bind="">{{ _("Error installing docker:") }}</p>
+            <p style="color:red" data-bind="text: error"></p>
+            <a class="btn btn-danger" data-bind="click: cancel_install_docker">{{ _("Back") }}</a>
+        </div>
+    </div>
+
+    <div data-bind="visible: !docker_available() && reboot_need()">
+        <p>{{ _("Reboot your system.") }}</p>
+        <p>{{ _("You must reboot your system for the changes to take effect.") }}</p>
+        <a class="btn btn-primary" data-bind="click: reboot">{{ _("Reboot") }}</a>
+    </div>
+
+    <div data-bind="visible: docker_available() && !installing()">
+        <p>{{ _("Install plugin requirements") }}</p>
+        <a class="btn btn-primary" data-bind="click: run_docker">{{ _("Install Plugin") }}</a>
+    </div>
 
     <div data-bind="visible: installing()">
         <p>{{ _("Installing plugin requirements") }}</p>

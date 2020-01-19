@@ -19,6 +19,7 @@ from octoprint_plabric.controllers.video_stream import VideoStream
 from octoprint_plabric.controllers import utils as _utils
 from octoprint_plabric import config
 from octoprint_plabric.controllers import download as _download
+import flask
 
 
 class PlabricPlugin(octoprint.plugin.SettingsPlugin,
@@ -47,6 +48,8 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 
 		self.retries_count = 0
 		self.available_port = _utils.get_available_port()
+		self.tmp_p = None
+		self.error = ''
 
 	def on_event(self, event, payload):
 		if event == 'ClientOpened':
@@ -158,9 +161,14 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 					configurated=self._config_state == ConfigState.DONE,
 					config_cancelled=self._config_state == ConfigState.CANCELLED,
 					status=self.get_status(),
-					docker_available=self._docker_state != DockerState.DOCKER_NOT_AVAILABLE,
+					docker_available=self._docker_state not in [DockerState.DOCKER_NOT_AVAILABLE, DockerState.DOCKER_INSTALLING, DockerState.DOCKER_INSTALL_ERROR, DockerState.REBOOT_NEED],
 					docker_running=self._docker_state == DockerState.RUNNING,
+					error=self.error,
 					os=self._os,
+					docker_installing=self._docker_state == DockerState.DOCKER_INSTALLING,
+					docker_install_error=self._docker_state == DockerState.DOCKER_INSTALL_ERROR,
+					docker_install_progress=self._docker.get_install_progress() if self._docker else 0,
+					reboot_need=self._docker_state == DockerState.REBOOT_NEED,
 					installing=self._docker_state == DockerState.INSTALLING_IMAGE or self._docker_state == DockerState.DOWNLOADING,
 					install_progress=self._docker.get_download_progress() if self._docker else 0,
 					socket_connected=self._socket_state == SocketState.CONNECTED)
@@ -169,8 +177,11 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 		if self._docker_state == DockerState.DOCKER_NOT_AVAILABLE or self._docker_state == DockerState.READY:
 			return 'Need install'
 
-		if self._docker_state == DockerState.INSTALLING_IMAGE or self._docker_state == DockerState.DOWNLOADING:
+		if self._docker_state == DockerState.DOCKER_INSTALLING or self._docker_state == DockerState.INSTALLING_IMAGE or self._docker_state == DockerState.DOWNLOADING:
 			return 'Installing...'
+
+		if self._docker_state == DockerState.REBOOT_NEED:
+			return "Reboot needed"
 
 		if self._docker_state == DockerState.INSTALLED:
 			return 'Waiting...'
@@ -274,6 +285,10 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 		self._temp_token = data['token']
 		return self._temp_token
 
+	def set_error_install_docker(self, error):
+		self.error = error
+		self.update_ui_status()
+
 	@octoprint.plugin.BlueprintPlugin.route("/token", methods=["GET"])
 	@admin_permission.require(403)
 	def get_temp_token_api(self):
@@ -300,6 +315,28 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 			self._docker.run(allow_install=True)
 		else:
 			self.init()
+		return ''
+
+	@octoprint.plugin.BlueprintPlugin.route("/install_docker", methods=["POST"])
+	@admin_permission.require(403)
+	def install_docker(self):
+		self.tmp_p = flask.request.values["pass"]
+		self._docker.install(password=self.tmp_p, error_callback=self.set_error_install_docker)
+		return ''
+
+	@octoprint.plugin.BlueprintPlugin.route("/install_docker_cancel", methods=["GET"])
+	@admin_permission.require(403)
+	def install_docker_cancel(self):
+		self.tmp_p = None
+		self.error = ''
+		self._docker.set_new_state(self._docker_state.DOCKER_NOT_AVAILABLE)
+		return ''
+
+	@octoprint.plugin.BlueprintPlugin.route("/reboot", methods=["GET"])
+	@admin_permission.require(403)
+	def reboot(self):
+		self._docker.reboot(password=self.tmp_p)
+		self.tmp_p = None
 		return ''
 
 	@octoprint.plugin.BlueprintPlugin.route("/reconnect", methods=["GET"])
