@@ -18,7 +18,7 @@ plugin_version = "1"
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
 # module
-plugin_description = """TODO"""
+plugin_description = "Manage and control your 3D printer anywhere without port forwarding or VPN. Plabric plugin allows you to link your 3D printer with Plabric app. Discover all features on https://plabric.com"
 
 # The plugin's author. Can be overwritten within OctoPrint's internal data via __plugin_author__ in the plugin module
 plugin_author = "Plabric"
@@ -27,7 +27,7 @@ plugin_author = "Plabric"
 plugin_author_email = "contact@plabric.com"
 
 # The plugin's homepage URL. Can be overwritten within OctoPrint's internal data via __plugin_url__ in the plugin module
-plugin_url = "https://github.com/Plabric/Plabric"
+plugin_url = "https://github.com/plabric/Octoprint-Plabric"
 
 # The plugin's license. Can be overwritten within OctoPrint's internal data via __plugin_license__ in the plugin module
 plugin_license = "AGPLv3"
