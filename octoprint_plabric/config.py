@@ -1,6 +1,5 @@
 
-# todo disable debug
-DEBUG = True
+DEBUG = False
 
 HOST_PLABRIC_API = 'https://api.plabric.com'
 HOST_DOCKER_IMAGE = 'http://localhost'
