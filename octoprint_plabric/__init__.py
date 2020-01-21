@@ -254,22 +254,14 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 
 	# ~~ Softwareupdate hook
 	def get_update_information(self):
-		# Define the configuration for your plugin to use with the Software Update
-		# todo
-		# Plugin here. See https://github.com/foosel/OctoPrint/wiki/Plugin:-Software-Update
-		# for details.
 		return dict(
 			Plabric=dict(
 				displayName="Plabric",
 				displayVersion=self._plugin_version,
-
-				# version check: github repository
 				type="github_release",
 				user="plabric",
 				repo="OctoPrint-Plabric",
 				current=self._plugin_version,
-
-				# update method: pip
 				pip="https://github.com/Plabric/OctoPrint-Plabric/archive/{target_version}.zip"
 			)
 		)
