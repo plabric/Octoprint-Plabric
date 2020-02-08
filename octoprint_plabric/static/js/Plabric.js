@@ -16,6 +16,7 @@ $(function() {
         self.docker_available = ko.observable(plabric_variables.docker_available);
         self.socket_connected = ko.observable(plabric_variables.socket_connected);
         self.os = ko.observable(plabric_variables.os);
+        self.machine = ko.observable(plabric_variables.machine);
         self.docker_installing = ko.observable(plabric_variables.docker_installing);
         self.docker_install_error = ko.observable(plabric_variables.docker_install_error);
         self.reboot_need = ko.observable(plabric_variables.reboot_need);
@@ -67,6 +68,7 @@ $(function() {
                 self.docker_running(data.docker_running);
                 self.socket_connected(data.socket_connected);
                 self.os(data.os);
+                self.machine(data.machine);
                 self.docker_installing(data.docker_installing);
                 self.docker_install_error(data.docker_install_error);
                 self.reboot_need(data.reboot_need);
