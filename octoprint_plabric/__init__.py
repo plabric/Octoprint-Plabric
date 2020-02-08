@@ -38,6 +38,7 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 		self._socket_state = SocketState.DISCONNECTED
 
 		self._os = _utils.system()
+		self._machine = _utils.machine()
 		self._octoprint_api_key = None
 		self._temp_token = None
 		self._config_state = ConfigState.NEEDED
@@ -165,6 +166,7 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 					docker_running=self._docker_state == DockerState.RUNNING,
 					error=self.error,
 					os=self._os,
+					machine=self._machine,
 					docker_installing=self._docker_state == DockerState.DOCKER_INSTALLING,
 					docker_install_error=self._docker_state == DockerState.DOCKER_INSTALL_ERROR,
 					docker_install_progress=self._docker.get_install_progress() if self._docker else 0,
