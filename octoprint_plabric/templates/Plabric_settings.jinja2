@@ -12,6 +12,7 @@
         install_progress: {{ plugin_Plabric_install_progress }},
         temp_token : '{{ plugin_Plabric_temp_token|escape }}' != 'None',
         socket_connected: '{{ plugin_Plabric_socket_connected }}' == 'True',
+        machine : '{{ plugin_Plabric_machine|escape }}',
         os : '{{ plugin_Plabric_os|escape }}',
         sudo_data: false,
         error: '{{ plugin_Plabric_error }}'
@@ -22,15 +23,26 @@
 
 <div data-bind="visible: !docker_running()">
     <div data-bind="visible: !docker_available() && !sudo_data() && !docker_installing() && !docker_install_error() && !reboot_need()">
+        <p>{{ _("Plabric Plugin is not running because we haven't detect Docker on your system.") }}</p>
         <div data-bind="visible: os() == 'Linux'">
-            <p>{{ _("Plabric Plugin is not running because we haven't detect Docker on your system.") }}</p>
-            <p>{{ _("Install docker on your system clicking the button below:") }}</p>
+             <p>{{ _("Install docker on your system clicking the button below:") }}</p>
             <a class="btn btn-primary" data-bind="click: to_sudo_data">{{ _("Install docker") }}</a>
-            <p style="margin-top: 20px">{{ _("Or do it mannually visiting how to install docker on your system:") }} <a target="_blank" href="https://plabric.com/docker-install-tutorial/" style="color: #00A69A">{{ _("Install Docker") }}</a></p>
+            <p style="margin-top: 20px">{{ _("Or do it mannually visiting how to install docker on your system:") }}</p>
+            <div data-bind="visible: machine() == 'armv7l'">
+                <a target="_blank" href="https://plabric.com/docker-install-tutorial-raspberry/" style="color: #00A69A">{{ _("Install Docker on Raspberry") }}</a>
+            </div>
+            <div data-bind="visible: machine() != 'armv7l'">
+                <a target="_blank" href="https://plabric.com/docker-install-tutorial-linux/" style="color: #00A69A">{{ _("Install Docker on Linux") }}</a>
+            </div>
         </div>
         <div data-bind="visible: os() != 'Linux'">
-            <p>{{ _("Plabric Plugin is not running because we haven't detect Docker in your system.") }}</p>
-            <p>{{ _("Visit how to enable docker on your system:") }} <a target="_blank" href="https://plabric.com/docker-install-tutorial/" style="color: #00A69A">{{ _("Install Docker") }}</a></p>
+            <p>{{ _("Visit how to enable docker on your system:") }}</p>
+            <div data-bind="visible: os() == 'Windows'">
+                <a target="_blank" href="https://docs.docker.com/docker-for-windows/install/" style="color: #00A69A">{{ _("Install Docker on Windows") }}</a>
+            </div>
+            <div data-bind="visible: os() == 'Darwin'">
+                <a target="_blank" href="https://docs.docker.com/docker-for-mac/install/" style="color: #00A69A">{{ _("Install Docker on Mac") }}</a>
+            </div>
         </div>
     </div>
 
