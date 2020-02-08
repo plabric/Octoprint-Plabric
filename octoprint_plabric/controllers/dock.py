@@ -92,24 +92,34 @@ class DockerController:
 	def install(self, password, error_callback):
 		self.set_new_state(DockerState.DOCKER_INSTALLING)
 		self.install_progress(10)
-		succeed = self.apply_command(cmd='echo {} | sudo -S {}'.format(password, 'sudo apt-get install curl -y'), error_callback=error_callback)
+		succeed = self.apply_command(cmd='apt-get install curl -y'.split(), password=password, as_sudo=True, error_callback=error_callback)
 		if not succeed:
 			return
 		self.install_progress(33)
-		succeed = self.apply_command(cmd='curl -sSL https://get.docker.com | sh', error_callback=error_callback)
+		succeed = self.apply_command(cmd='sh -c'.split() + ['curl -sSL https://get.docker.com'], password=password, as_sudo=True, error_callback=error_callback)
 		if not succeed:
 			return
 		self.install_progress(66)
-		succeed = self.apply_command(cmd='echo {} | sudo -S {}'.format(password, 'sudo usermod -aG docker $USER'), error_callback=error_callback)
+		p = subprocess.Popen('whoami', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		output, _ = p.communicate()
+		output = output.decode('utf-8')
+		output = output.replace("\n", "")
+		self.log('User: %s' % output)
+		succeed = self.apply_command(cmd=('usermod -G docker -a %s' % output).split(), password=password, as_sudo=True, error_callback=error_callback)
 		if not succeed:
 			return
 		self.install_progress(100)
 		self.set_new_state(DockerState.REBOOT_NEED)
 
-	def apply_command(self, cmd, error_callback):
-		p = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	def apply_command(self, cmd, error_callback, password, as_sudo=False):
+		cmd_sudo = None
+		if as_sudo:
+			cmd_sudo = subprocess.Popen(['echo', password], stdout=subprocess.PIPE)
+		cmd = ['sudo', '-S'] + cmd
+		self.log(cmd)
+		p = subprocess.Popen(cmd, stdin=cmd_sudo.stdout if cmd_sudo else None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		output, err = p.communicate()
-		self.log("Ouput: %s" % output)
+		self.log("Output: %s" % output)
 		if p.returncode and err and error_callback:
 			self.log("Error %s" % err)
 			self.set_new_state(DockerState.DOCKER_INSTALL_ERROR)
