@@ -96,7 +96,7 @@ class Socket:
 		data = {'octoprint_api_key': self._octoprint_api_key, 'host': 'localhost', 'api_key': str(api_key) if api_key else ''}
 		self.log(data)
 		self._sio.emit('init', data, namespace=self._namespace)
-		if api_key:
+		if api_key is not None:
 			self._plugin.refresh_config_state(ConfigState.DONE)
 
 	def is_connected(self):
