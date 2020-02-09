@@ -95,11 +95,15 @@ class DockerController:
 		succeed = self.apply_command(cmd='apt-get install curl -y'.split(), password=password, as_sudo=True, error_callback=error_callback)
 		if not succeed:
 			return
-		self.install_progress(33)
-		succeed = self.apply_command(cmd='sh -c'.split() + ['curl -sSL https://get.docker.com'], password=password, as_sudo=True, error_callback=error_callback)
+		self.install_progress(20)
+		succeed = self.apply_command(cmd='curl -fsSL https://get.docker.com -o get-docker.sh'.split(), password=None, as_sudo=False, error_callback=error_callback)
 		if not succeed:
 			return
-		self.install_progress(66)
+		self.install_progress(30)
+		succeed = self.apply_command(cmd='sh get-docker.sh'.split(), password=password, as_sudo=True, error_callback=error_callback)
+		if not succeed:
+			return
+		self.install_progress(60)
 		p = subprocess.Popen('whoami', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		output, _ = p.communicate()
 		output = output.decode('utf-8')
