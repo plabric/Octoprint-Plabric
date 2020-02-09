@@ -238,6 +238,9 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 		with open(config_path, 'w+') as outfile:
 			yaml.dump(s, outfile, default_flow_style=False)
 
+	def clear_setting(self, key):
+		self.save_setting(key, None)
+
 	def get_octoprint_api_key(self):
 		return self._octoprint_api_key
 
@@ -296,6 +299,7 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 	@octoprint.plugin.BlueprintPlugin.route("/disable", methods=["GET"])
 	@admin_permission.require(403)
 	def disable_api(self):
+		self.clear_setting('api_key')
 		if self._socket:
 			self._socket.disable_connection()
 		self.set_user_joined(False, None)
