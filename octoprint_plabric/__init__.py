@@ -224,7 +224,7 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 	def get_saved_setting(self, key):
 		if key is not None:
 			settings = self.get_saved_settings()
-			if settings is not None and key in settings:
+			if settings is not None and key in settings and settings[key] is not None:
 				return settings[key]
 		return None
 
