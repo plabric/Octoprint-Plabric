@@ -89,13 +89,14 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 					self._docker.set_new_state(DockerState.STOPPED)
 
 	def refresh_docker_state(self, state):
-		self.log('Docker state: ' + state.name)
-		self._docker_state = state
-		self.update_ui_status()
+		if self._docker_state != DockerState.REBOOT_NEED:
+			self.log('Docker state: ' + state.name)
+			self._docker_state = state
+			self.update_ui_status()
 
-		if state == DockerState.RUNNING:
-			time.sleep(2)
-			self.connect_socket()
+			if state == DockerState.RUNNING:
+				time.sleep(4)
+				self.connect_socket()
 
 	def refresh_socket_state(self, state):
 		self.log('Socket state: ' + state.name)
