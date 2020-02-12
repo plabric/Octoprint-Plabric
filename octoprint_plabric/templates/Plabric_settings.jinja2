@@ -81,6 +81,7 @@
 
     <div data-bind="visible: docker_available() && !installing()">
         <p>{{ _("Install plugin requirements") }}</p>
+        <p>{{ _("File of 200Mb(approx) will be downloaded during installation process") }}</p>
         <a class="btn btn-primary" data-bind="click: run_docker">{{ _("Install Plugin") }}</a>
     </div>
 
