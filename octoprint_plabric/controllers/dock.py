@@ -26,21 +26,21 @@ class DockerState(Enum):
 	STOPPED = 'stopped'
 
 
-DOWNLOAD_DIRECTORY = os.path.dirname(os.path.realpath(__file__)) + '/docker_img/'
-if not os.path.isdir(DOWNLOAD_DIRECTORY):
-	os.makedirs(DOWNLOAD_DIRECTORY)
+DOCKER_IMAGE_FOLDER = '.docker_image'
 
 
-def get_file_image():
+def get_file_image(path):
+	path = os.path.join(path, DOCKER_IMAGE_FOLDER)
 	file_path = None
-	if os.path.exists(DOWNLOAD_DIRECTORY):
-		for f in os.listdir(DOWNLOAD_DIRECTORY):
-			file_path = os.path.join(DOWNLOAD_DIRECTORY, f)
+	if os.path.exists(path):
+		for f in os.listdir(path):
+			file_path = os.path.join(path, f)
 	return file_path if file_path is not None and config.DOCKER_IMAGE_NAME in file_path else None
 
 
-def get_last_image_name():
-	file_path = os.path.join(DOWNLOAD_DIRECTORY, "last.txt")
+def get_last_image_name(path):
+	path = os.path.join(path, DOCKER_IMAGE_FOLDER)
+	file_path = os.path.join(path, "last.txt")
 	if os.path.isfile(file_path):
 		file = open(file_path, "r")
 		data = file.read()
@@ -48,10 +48,11 @@ def get_last_image_name():
 	return None
 
 
-def store_last_image_name(path):
-	file_path = os.path.join(DOWNLOAD_DIRECTORY, "last.txt")
+def store_last_image_name(path, name):
+	path = os.path.join(path, DOCKER_IMAGE_FOLDER)
+	file_path = os.path.join(path, "last.txt")
 	file = open(file_path, "w")
-	head, tail = os.path.split(path)
+	head, tail = os.path.split(name)
 	file.write(tail)
 	file.close()
 
@@ -161,7 +162,7 @@ class DockerController:
 			url, version = self.get_download_url()
 			self.log(url)
 			if url is not None and version is not None:
-				last_version = get_last_image_name()
+				last_version = get_last_image_name(self._plugin.get_plugin_data_folder())
 				self.log(last_version)
 				if last_version is None or last_version != version:
 					self.download_image()
@@ -207,7 +208,7 @@ class DockerController:
 		if self._state != DockerState.INSTALLING_IMAGE:
 			if self.get_image() is not None:
 				self.uninstall_image()
-			path = get_file_image()
+			path = get_file_image(self._plugin.get_plugin_data_folder())
 			if path is not None:
 				self.set_new_state(DockerState.INSTALLING_IMAGE)
 				try:
@@ -218,7 +219,7 @@ class DockerController:
 
 				self.clean_downloads_folder()
 				self.set_new_state(DockerState.INSTALLED)
-				store_last_image_name(path)
+				store_last_image_name(self._plugin.get_plugin_data_folder(), path)
 				self.run()
 
 	def uninstall_image(self):
@@ -242,7 +243,10 @@ class DockerController:
 				self.notify_error(self._state)
 				return
 
-			dest = os.path.join(DOWNLOAD_DIRECTORY, version)
+			folder = os.path.join(self._plugin.get_plugin_data_folder(), DOCKER_IMAGE_FOLDER)
+			if not os.path.isdir(folder):
+				os.makedirs(folder)
+			dest = os.path.join(folder, version)
 			t = _download.DownloadThread(url, dest, self.download_callback, self.download_progress, self.log)
 			t.start()
 
@@ -271,9 +275,10 @@ class DockerController:
 		return self._install_progress
 
 	def clean_downloads_folder(self):
-		if os.path.exists(DOWNLOAD_DIRECTORY):
-			for f in os.listdir(DOWNLOAD_DIRECTORY):
-				file_path = os.path.join(DOWNLOAD_DIRECTORY, f)
+		path = os.path.join(self._plugin.get_plugin_data_folder(), DOCKER_IMAGE_FOLDER)
+		if os.path.exists(path):
+			for f in os.listdir(path):
+				file_path = os.path.join(path, f)
 				try:
 					if os.path.isfile(file_path):
 						os.unlink(file_path)
