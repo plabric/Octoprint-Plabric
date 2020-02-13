@@ -2,7 +2,7 @@ from enum import Enum
 
 import socketio
 
-from octoprint_plabric import config, DockerState
+from octoprint_plabric import config
 
 
 class ConfigState(Enum):
