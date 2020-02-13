@@ -4,7 +4,6 @@ from enum import Enum
 
 import docker
 import requests
-import subprocess
 
 from octoprint_plabric import config
 from octoprint_plabric.controllers import download as _download
@@ -13,9 +12,6 @@ from octoprint_plabric.controllers import utils as _utils
 
 class DockerState(Enum):
 	DOCKER_NOT_AVAILABLE = 'not_installed',
-	DOCKER_INSTALLING = 'docker_installing',
-	DOCKER_INSTALL_ERROR = 'docker_install_error',
-	REBOOT_NEED = 'reboot_need'
 	READY = 'ready'
 	DOWNLOADING = 'downloading',
 	INSTALLING_IMAGE = 'installing_image',
@@ -89,52 +85,6 @@ class DockerController:
 		self.set_new_state(DockerState.DOCKER_NOT_AVAILABLE if self._client is None else DockerState.READY)
 		self.check_still_running()
 		self.check_new_version()
-
-	def install(self, password, error_callback):
-		self.set_new_state(DockerState.DOCKER_INSTALLING)
-		self.install_progress(10)
-		succeed = self.apply_command(cmd='apt-get install curl -y'.split(), password=password, as_sudo=True, error_callback=error_callback)
-		if not succeed:
-			return
-		self.install_progress(20)
-		succeed = self.apply_command(cmd='curl -fsSL https://get.docker.com -o get-docker.sh'.split(), password=None, as_sudo=False, error_callback=error_callback)
-		if not succeed:
-			return
-		self.install_progress(30)
-		succeed = self.apply_command(cmd='sh get-docker.sh'.split(), password=password, as_sudo=True, error_callback=error_callback)
-		if not succeed:
-			return
-		self.install_progress(60)
-		p = subprocess.Popen('whoami', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		output, _ = p.communicate()
-		output = output.decode('utf-8')
-		output = output.replace("\n", "")
-		self.log('User: %s' % output)
-		succeed = self.apply_command(cmd=('usermod -G docker -a %s' % output).split(), password=password, as_sudo=True, error_callback=error_callback)
-		if not succeed:
-			return
-		self.install_progress(100)
-		self.set_new_state(DockerState.REBOOT_NEED)
-
-	def apply_command(self, cmd, error_callback, password, as_sudo=False):
-		cmd_sudo = None
-		if as_sudo:
-			cmd_sudo = subprocess.Popen(['echo', password], stdout=subprocess.PIPE)
-		cmd = ['sudo', '-S'] + cmd
-		self.log(cmd)
-		p = subprocess.Popen(cmd, stdin=cmd_sudo.stdout if cmd_sudo else None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		output, err = p.communicate()
-		self.log("Output: %s" % output)
-		if p.returncode and err and error_callback:
-			self.log("Error %s" % err)
-			self.set_new_state(DockerState.DOCKER_INSTALL_ERROR)
-			error_callback(err)
-			return False
-		return True
-
-	def reboot(self, password):
-		self.log('Reboot called')
-		subprocess.call('echo {} | sudo -S {}'.format(password, 'sudo reboot'), shell=True)
 
 	def get_image(self):
 		try:
