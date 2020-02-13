@@ -4,6 +4,7 @@ from enum import Enum
 
 import docker
 import requests
+import queue
 
 from octoprint_plabric import config
 from octoprint_plabric.controllers import download as _download
@@ -197,8 +198,20 @@ class DockerController:
 			if not os.path.isdir(folder):
 				os.makedirs(folder)
 			dest = os.path.join(folder, version)
-			t = _download.DownloadThread(url, dest, self.download_callback, self.download_progress, self.log)
+			queue_main = queue.Queue()
+			queue_progress = queue.Queue()
+			t = _download.DownloadThread(url, dest, queue_main, queue_progress, self.log)
 			t.start()
+
+			while t.isAlive():
+				if not queue_progress.empty():
+					progress = queue_progress.get_nowait()
+					if progress is not None:
+						self.download_progress(progress)
+				if not queue_main.empty():
+					succeed = queue_main.get_nowait()
+					if succeed is not None:
+						self.download_callback(succeed)
 
 	def download_callback(self, succeed):
 		if succeed:
