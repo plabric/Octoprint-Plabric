@@ -43,7 +43,6 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 
 		self._os = _utils.system()
 		self._machine = _utils.machine()
-		self._octoprint_api_key = None
 		self._temp_token = None
 		self._config_state = ConfigState.NEEDED
 
@@ -61,7 +60,6 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 			self.update_ui_status()
 
 	def on_startup(self, host, port):
-		self._octoprint_api_key = settings().get(["api", "key"])
 		self.init()
 
 	def init(self):
@@ -83,9 +81,9 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 
 	def retry_connection(self):
 		if self._docker_state == DockerState.RUNNING:
-			if self.retries_count < 5:
+			if self.retries_count < 2:
 				self.retries_count += 1
-				time.sleep(2)
+				time.sleep(1)
 				self.connect_socket()
 			else:
 				self.retries_count = 0
@@ -236,10 +234,16 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 			yaml.dump(s, outfile, default_flow_style=False)
 
 	def clear_setting(self, key):
-		self.save_setting(key, None)
+		s = self.get_saved_settings()
+		self.log('Clear key: %s' % key)
+		if s is None:
+			return
+		if key in s:
+			s.pop(key)
+		config_path = self.get_plugin_data_folder() + "/.config.yaml"
+		with open(config_path, 'w+') as outfile:
+			yaml.dump(s, outfile, default_flow_style=False)
 
-	def get_octoprint_api_key(self):
-		return self._octoprint_api_key
 
 	# ~~ AssetPlugin mixin
 	def get_assets(self):
@@ -272,26 +276,34 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 		self.log(self.available_port)
 		return "%s:%d" % (config.HOST_DOCKER_IMAGE, self.available_port)
 
-	def get_temp_token(self):
-		r = requests.get("%s/token" % self.get_host_docker_image())
+	def authorize(self):
+		r = requests.get("%s/authorize" % self.get_host_docker_image())
 		r.raise_for_status()
-		data = r.json()
-		self._temp_token = data['token']
-		return self._temp_token
+
+	def set_temp_token(self, token):
+		if token:
+			self._temp_token = token
+			self.update_ui_status()
+
+	def set_error(self, error):
+		if error:
+			if error == 'error_authorization':
+				self.error = 'You have to allow access to Plabric for continue'
+			self.update_ui_status()
 
 	def set_error_install_docker(self, error):
 		self.error = error
 		self.update_ui_status()
 
-	@octoprint.plugin.BlueprintPlugin.route("/token", methods=["GET"])
+	@octoprint.plugin.BlueprintPlugin.route("/authorize", methods=["GET"])
 	@admin_permission.require(403)
-	def get_temp_token_api(self):
+	def authorize_access(self):
+		self.error = ''
+		self._temp_token = None
 		if self._socket is None or self._socket_state == SocketState.DISCONNECTED:
 			self.init()
-		temp_token = self.get_temp_token()
-		if temp_token:
-			self.log(temp_token)
-		return _json.dumps({'temp_token': temp_token})
+		self.authorize()
+		return ''
 
 	@octoprint.plugin.BlueprintPlugin.route("/disable", methods=["GET"])
 	@admin_permission.require(403)
