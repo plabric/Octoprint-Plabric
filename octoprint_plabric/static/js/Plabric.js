@@ -20,14 +20,14 @@ $(function() {
         self.installing = ko.observable(plabric_variables.installing);
         self.install_progress = ko.observable(plabric_variables.install_progress);
         self.progress_width = ko.observable('0px');
+        self.error = ko.observable(plabric_variables.error);
 
         self.login = function () {
             $.ajax({
                 type: "GET",
-                url: "/plugin/Plabric/token",
+                url: "/plugin/Plabric/authorize",
                 success: function (data) {
-                    var json = $.parseJSON(data);
-                    self.temp_token(json.temp_token);
+                    console.log("Plabric: Waiting for authorization");
                 },
                 error: function (error) {
                     console.error("Plabric: Unable to retrieve token");
@@ -51,6 +51,7 @@ $(function() {
                 self.installing(data.installing);
                 self.install_progress(data.install_progress);
                 self.progress_width(self.install_progress().toString() + '%');
+                self.error(data.error);
 
                 if (self.config_cancelled()) {
                     self.cancel_config();

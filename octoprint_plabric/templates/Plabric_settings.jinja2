@@ -9,7 +9,8 @@
         temp_token : '{{ plugin_Plabric_temp_token|escape }}' != 'None',
         socket_connected: '{{ plugin_Plabric_socket_connected }}' == 'True',
         machine : '{{ plugin_Plabric_machine|escape }}',
-        os : '{{ plugin_Plabric_os|escape }}'
+        os : '{{ plugin_Plabric_os|escape }}',
+        error: '{{ plugin_Plabric_error }}'
     };
 </script>
 
@@ -73,6 +74,7 @@
             <li> {{ _("Create new printer profile and follow the steps provided in the app for connect your printer.") }}</li>
             <li> {{ _("Finally come back and click the button below.") }}</li>
         </ul>
+        <p style="color:red" data-bind="visible: error().length > 0, text: error"></p>
         <a class="btn btn-primary" data-bind="click: login">{{ _("Connect with my Plabric Account") }}</a>
     </div>
 
