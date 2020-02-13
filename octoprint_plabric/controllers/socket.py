@@ -22,7 +22,6 @@ class Socket:
 		self._logger = plugin.get_logger()
 		self._namespace = config.NAMESPACE_DOCKER_IMAGE
 		self._host = plugin.get_host_docker_image()
-		self._octoprint_api_key = plugin.get_octoprint_api_key()
 
 		self._sio = socketio.Client(reconnection=True, reconnection_delay=2)
 
@@ -46,6 +45,16 @@ class Socket:
 		def on_configuration_needed():
 			self.log("Configuration needed")
 			self._plugin.refresh_config_state(ConfigState.NEEDED)
+
+		@self._sio.on('authorization_succeed', namespace=self._namespace)
+		def on_authorization_succeed(token):
+			self.log("Plabric token received")
+			self._plugin.set_temp_token(token)
+
+		@self._sio.on('authorization_error', namespace=self._namespace)
+		def on_authorization_error(error):
+			self.log("Plabric error on authorization")
+			self._plugin.set_error(error)
 
 		@self._sio.on('config_done', namespace=self._namespace)
 		def on_configuration_done(api_key):
@@ -92,12 +101,11 @@ class Socket:
 	def init(self):
 		self.log('Init docker connection')
 		api_key = self._plugin.get_saved_setting('api_key')
-		self.log('data:')
-		data = {'octoprint_api_key': self._octoprint_api_key, 'host': 'localhost', 'api_key': str(api_key) if api_key else ''}
+		data = {'host': 'localhost'}
+		if api_key:
+			data['api_key'] = str(api_key)
 		self.log(data)
 		self._sio.emit('init', data, namespace=self._namespace)
-		if api_key is not None:
-			self._plugin.refresh_config_state(ConfigState.DONE)
 
 	def is_connected(self):
 		return self._sio and self._sio.connected
