@@ -1,10 +1,15 @@
 import threading
-import time
 from datetime import datetime
 
-import StringIO
+import sys
+if sys.version_info >= (3, 0):
+	from urllib.request import urlopen
+	from io import StringIO
+if (3, 0) > sys.version_info >= (2, 5):
+	from urllib2 import urlopen
+	from StringIO import StringIO
+
 from contextlib import closing
-import urllib2
 
 
 class VideoStream:
@@ -56,7 +61,7 @@ class UpStream:
 
 	def capture_mjpeg(self):
 		try:
-			with closing(urllib2.urlopen(self._stream_url)) as res:
+			with closing(urlopen(self._stream_url)) as res:
 				chunker = MjpegStreamChunker()
 				while True:
 					data = res.readline()
@@ -64,12 +69,8 @@ class UpStream:
 					if mjpg:
 						res.close()
 						return mjpg
-		except urllib2.HTTPError as e:
+		except Exception as e:
 			self.log(e.args)
-			pass
-		except urllib2.URLError as e:
-			self.log(e.args)
-			pass
 
 	def log(self, msg):
 		if self._logger:
@@ -80,7 +81,7 @@ class MjpegStreamChunker:
 
 	def __init__(self):
 		self.boundary = None
-		self.current_chunk = StringIO.StringIO()
+		self.current_chunk = StringIO()
 
 	def chunk(self, line):
 		if not self.boundary:
