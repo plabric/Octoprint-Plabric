@@ -3,7 +3,12 @@ from __future__ import absolute_import
 
 import json as _json
 import time
-from urlparse import urlparse
+import sys
+
+if sys.version_info >= (3, 0):
+    from urllib.parse import urlparse as _parse
+if (3, 0) > sys.version_info >= (2, 5):
+    from urlparse import urlparse as _parse
 
 import requests
 import yaml
@@ -127,7 +132,7 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 	def set_video_stream_enabled(self, enabled):
 		if enabled and self._docker_state == DockerState.RUNNING and self._config_state == ConfigState.DONE and self._socket_state == SocketState.CONNECTED:
 			stream_url = settings().get(["webcam", "stream"])
-			host_name = urlparse(stream_url).hostname
+			host_name = _parse(stream_url).hostname
 			if host_name is None:
 				stream_url = "http://localhost:8080/?action=stream"
 			# 	http://octopi.local:80/webcam/?action=stream
