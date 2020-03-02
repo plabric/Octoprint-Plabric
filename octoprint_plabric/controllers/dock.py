@@ -144,6 +144,7 @@ class DockerController:
 				name=config.DOCKER_CONTAINER_NAME,
 				auto_remove=True,
 				network_mode="host",
+				devices=['/dev/video0:/dev/video0'],
 				environment=["PLUGIN_PORT=%d" % self._plugin.available_port])
 			self.set_new_state(DockerState.RUNNING)
 
