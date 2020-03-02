@@ -70,7 +70,6 @@ class Socket:
 
 		@self._sio.on('video_stream_enabled', namespace=self._namespace)
 		def on_video_stream_enabled(enabled):
-			self.log("Video stream enabled" if enabled else "Video stream disabled")
 			self._plugin.set_video_stream_enabled(enabled)
 
 		@self._sio.on('disconnect', namespace=self._namespace)
