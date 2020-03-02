@@ -2,24 +2,15 @@
 from __future__ import absolute_import
 
 import time
-import sys
-
-if sys.version_info >= (3, 0):
-    from urllib.parse import urlparse as _parse
-if (3, 0) > sys.version_info >= (2, 5):
-    from urlparse import urlparse as _parse
-
 import requests
 import yaml
 import os
 
 import octoprint.plugin
 from octoprint.server import admin_permission
-from octoprint.settings import settings
 
 from octoprint_plabric.controllers.dock import DockerController as _docker, DockerState
 from octoprint_plabric.controllers.socket import Socket as _socket, SocketState, ConfigState
-from octoprint_plabric.controllers.video_stream import VideoStream
 from octoprint_plabric.controllers import utils as _utils
 from octoprint_plabric import config
 from octoprint_plabric.controllers import download as _download
@@ -45,7 +36,6 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 		self._temp_token = None
 		self._config_state = ConfigState.NEEDED
 
-		self._video_stream = None
 		self._user_joined = False
 		self._user_nick = None
 
@@ -103,9 +93,6 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 		self._socket_state = state
 		self.update_ui_status()
 
-		if state == SocketState.DISCONNECTED:
-			self.set_video_stream_enabled(False)
-
 	def refresh_config_state(self, state):
 		self.log('Config state: ' + state.name)
 		self._config_state = state
@@ -125,25 +112,12 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 		return self._socket
 
 	def set_video_stream_enabled(self, enabled):
-		if enabled and self._docker_state == DockerState.RUNNING and self._config_state == ConfigState.DONE and self._socket_state == SocketState.CONNECTED:
-			stream_url = settings().get(["webcam", "stream"])
-			host_name = _parse(stream_url).hostname
-			if host_name is None:
-				stream_url = "http://localhost:8080/?action=stream"
-			# 	http://octopi.local:80/webcam/?action=stream
-
-			self.log('Stream url: ' + stream_url)
-			if stream_url:
-				self._video_stream = VideoStream(self, stream_url=stream_url)
-				self._video_stream.run()
+		if enabled:
+			self.log('Video stream started')
 		else:
-			if self._video_stream:
-				self._video_stream.stop()
-			self._video_stream = None
+			self.log('Video stream stopped')
 
 	def on_shutdown(self):
-		if self._video_stream:
-			self._video_stream.stop()
 		if self._socket:
 			self._socket.disconnect()
 		if self._docker:
