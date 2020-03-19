@@ -1,8 +1,14 @@
+import os
 
-DEBUG = False
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 HOST_PLABRIC_API = 'https://api.plabric.com'
-HOST_DOCKER_IMAGE = 'http://localhost'
-NAMESPACE_DOCKER_IMAGE = ''
-DOCKER_IMAGE_NAME = 'plabric-api-image'
-DOCKER_CONTAINER_NAME = 'plabric-api'
+PLABRIC_SOCKET_NAMESPACE = "/octoprint/plugin/socket"
+
+JANUS_DIR = os.path.join(BASE_DIR, 'bin', 'janus')
+JANUS_RUN_LOCAL = True
+JANUS_HOST = 'localhost'
+JANUS_API_PORT = 9010
+JANUS_WS_PORT = 9011
+JANUS_VIDEO_HOST = 'localhost'
+JANUS_VIDEO_PORT = 9012
