@@ -11,4 +11,13 @@ dist
 /deployment
 /extras
 .editorconfig
-/octoprint_plabric/controllers/docker_img
+
+/octoprint_plabric/bin/janus/linux/x86_64/etc/janus/janus.jcfg
+/octoprint_plabric/bin/janus/linux/x86_64/etc/janus/janus.plugin.streaming.jcfg
+/octoprint_plabric/bin/janus/linux/x86_64/etc/janus/janus.transport.http.jcfg
+/octoprint_plabric/bin/janus/linux/x86_64/etc/janus/janus.transport.websockets.jcfg
+
+/octoprint_plabric/bin/janus/linux/armv7l/etc/janus/janus.jcfg
+/octoprint_plabric/bin/janus/linux/armv7l/etc/janus/janus.plugin.streaming.jcfg
+/octoprint_plabric/bin/janus/linux/armv7l/etc/janus/janus.transport.http.jcfg
+/octoprint_plabric/bin/janus/linux/armv7l/etc/janus/janus.transport.websockets.jcfg
