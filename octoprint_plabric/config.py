@@ -2,6 +2,7 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+DEBUG = False
 HOST_PLABRIC_API = 'https://api.plabric.com'
 PLABRIC_SOCKET_NAMESPACE = "/octoprint/plugin/socket"
 
