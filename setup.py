@@ -33,7 +33,7 @@ plugin_url = "https://github.com/plabric/Octoprint-Plabric"
 plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
-plugin_requires = ["python-socketio[client]", "docker==4.0.2", "enum34==1.1.6"]
+plugin_requires = ["python-engineio==3.11.2", "python-socketio[client]==4.4.0", "ffmpeg-python==0.2.0", "enum34==1.1.6"]
 
 ### --------------------------------------------------------------------------------------------------------------------
 ### More advanced options that you usually shouldn't have to touch follow after this point
