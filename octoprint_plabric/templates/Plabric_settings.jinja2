@@ -1,20 +1,11 @@
-<script>
-    var plabric_variables = {
-        plabric_token : '{{ plugin_Plabric_plabric_token|escape }}',
-        step: '{{ plugin_Plabric_step|escape }}',
-        error: '{{ plugin_Plabric_error|escape }}',
-        loading: '{{ plugin_Plabric_loading }}' == 'True',
-    };
-</script>
-
 <h4>Plabric</h4>
 
-<div data-bind="visible: step() == 'error_connection'">
+<div data-bind="visible: plabric.step() == 'error_connection'">
     <p>{{ _("Plabric Plugin is installed but the connection can't be established.") }}</p>
     <a class="btn btn-primary" data-bind="click: reconnect">{{ _("Retry connection") }}</a>
 </div>
 
-<div data-bind="visible: step() == 'login_needed' || step() == 'octoprint_oauth'">
+<div data-bind="visible: plabric.step() == 'login_needed' || plabric.step() == 'octoprint_oauth'">
     <p>{{ _("Control and monitoring your printer with") }} <a href="https://plabric.com/">Plabric</a></p>
     <ul>
         <li> {{ _("Download Plabric app on your phone.") }}</li>
@@ -22,12 +13,12 @@
         <li> {{ _("Create new printer profile and follow the steps provided in the app for connect your printer.") }}</li>
         <li> {{ _("Finally come back and click the button below.") }}</li>
     </ul>
-    <p style="color:red" data-bind="visible: error().length > 0, text: error"></p>
+    <p style="color:red" data-bind="visible: plabric.error() !== undefined && plabric.error().length > 0, text: plabric.error"></p>
 
-    <div data-bind="visible: !loading()">
+    <div data-bind="visible: !plabric.loading()">
         <a class="btn btn-primary" data-bind="click: login">{{ _("Connect with my Plabric Account") }}</a>
     </div>
-    <div data-bind="visible: loading()">
+    <div data-bind="visible: plabric.loading()">
         <div class="loader">
             <svg class="circular">
                 <circle class="path" cx="25" cy="25" r="10" fill="none" stroke-width="3" stroke-miterlimit="10"></circle>
@@ -36,15 +27,15 @@
     </div>
 </div>
 
-<div data-bind="visible: step() == 'qr_read'">
+<div data-bind="visible: plabric.step() == 'qr_read'">
     <p>{{ _("Scan this QR with Plabric for configure the connection.") }}</p>
     <p>{{ _("You can find the scanner under printer connections. Follow the steps in the app for connect.") }}</p>
-    <div data-bind="qrcode: {text: plabric_token, size: 180}"></div>
+    <div data-bind="qrcode: {text: plabric.plabric_token, size: 180}"></div>
 
-    <div data-bind="visible: !loading()">
+    <div data-bind="visible: !plabric.loading()">
         <a class="btn btn-danger" data-bind="click: disable">{{ _("Cancel") }}</a>
     </div>
-    <div data-bind="visible: loading()">
+    <div data-bind="visible: plabric.loading()">
         <div class="loader">
             <svg class="circular">
                 <circle class="path" cx="25" cy="25" r="10" fill="none" stroke-width="3" stroke-miterlimit="10"></circle>
@@ -53,15 +44,15 @@
     </div>
 </div>
 
-<div data-bind="visible: step() == 'ready' || step() == 'connected'">
+<div data-bind="visible: plabric.step() == 'ready' || plabric.step() == 'connected'">
     <p>{{ _("Octroprint is connected and ready for use with Plabric.") }}</p>
     <p>{{ _("You can disable Plabric access in the printer settings section in Plabric app or clicking the button below.") }}</p>
     <br>
 
-    <div data-bind="visible: !loading()">
+    <div data-bind="visible: !plabric.loading()">
        <a class="btn btn-danger" data-bind="click: disable">{{ _("Disable Plabric Plugin") }}</a>
     </div>
-    <div data-bind="visible: loading()">
+    <div data-bind="visible: plabric.loading()">
         <div class="loader">
             <svg class="circular">
                 <circle class="path" cx="25" cy="25" r="10" fill="none" stroke-width="3" stroke-miterlimit="10"></circle>

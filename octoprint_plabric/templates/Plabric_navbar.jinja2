@@ -1,16 +1,7 @@
-<script>
-    var plabric_status = {
-        status : '{{ plugin_Plabric_status }}',
-        step: '{{ plugin_Plabric_step|escape }}',
-        status_color: 'red',
-    }
-</script>
-
-
 <li data-bind="visible: loginState.isAdmin" style="">
     <a id="navbar_plugin_plabric" title="Plabric status">
         <p style="margin: 0">Plabric:
-            <span data-bind="style: { color:status_color() }"><span data-bind="text: status"></span></span>
+            <span data-bind="style: { color:plabric.status_color() }"><span data-bind="text: plabric.status"></span></span>
         </p>
     </a>
 </li>
