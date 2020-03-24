@@ -27,7 +27,7 @@ $(function() {
 
         self.login = function () {
             $.ajax({
-                type: "GET",
+                type: "POST",
                 url: "/plugin/Plabric/authorize",
                 success: function (data) {
                     console.log("Plabric: Waiting for authorization");
@@ -40,7 +40,7 @@ $(function() {
 
         self.disable = function () {
             $.ajax({
-                type: "GET",
+                type: "POST",
                 url: "/plugin/Plabric/disable",
                 success: function (data) {
                 },
@@ -52,7 +52,7 @@ $(function() {
 
         self.reconnect = function () {
             $.ajax({
-                type: "GET",
+                type: "POST",
                 url: "/plugin/Plabric/reconnect",
                 success: function (data) {
                 },
