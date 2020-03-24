@@ -80,7 +80,7 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 		return dict(
 			js=["js/Plabric.js", "js/Plabric_navbar.js", "js/PlabricStatus.js"],
 			css=["css/Plabric.css"],
-			less=["less/Plabric.less"]
+			less=[]
 		)
 
 	def get_version(self):
