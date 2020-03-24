@@ -3,10 +3,12 @@ from __future__ import absolute_import
 
 import octoprint.plugin
 from octoprint.server import admin_permission
+from octoprint.settings import settings
 
 from octoprint_plabric import config
 from octoprint_plabric.controllers.common import logger as _logger, utils as _utils
 from octoprint_plabric.controllers.main import Step, Main
+import json as _json
 
 
 class PlabricPlugin(octoprint.plugin.SettingsPlugin,
@@ -69,14 +71,14 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 		if self._main:
 			return dict(plabric_token=self._main.plabric_token, step=self._main.step.value, status=self._main.get_status(), error=self._main.error, loading=self._main.loading)
 		else:
-			return dict(plabric_token=None, step=Step.LOGIN_NEEDED, status='Login need', error='', loading=False)
+			return dict(plabric_token=None, step=Step.LOGIN_NEEDED.value, status='Login need', error='', loading=False)
 
 	# ~~ AssetPlugin mixin
 	def get_assets(self):
 		# Define your plugin's asset files to automatically include in the
 		# core UI here.
 		return dict(
-			js=["js/Plabric.js", "js/Plabric_navbar.js"],
+			js=["js/Plabric.js", "js/Plabric_navbar.js", "js/PlabricStatus.js"],
 			css=["css/Plabric.css"],
 			less=["less/Plabric.less"]
 		)
@@ -97,6 +99,11 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 				pip="https://github.com/Plabric/OctoPrint-Plabric/archive/{target_version}.zip"
 			)
 		)
+
+	@octoprint.plugin.BlueprintPlugin.route("/data", methods=["GET"])
+	@admin_permission.require(403)
+	def status_data(self):
+		return _json.dumps(self.get_template_vars())
 
 	@octoprint.plugin.BlueprintPlugin.route("/authorize", methods=["POST"])
 	@admin_permission.require(403)
