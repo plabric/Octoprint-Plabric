@@ -217,7 +217,7 @@ class Main:
 				pass
 
 			def video_stream_started(self):
-				self._p.video_streamer.start()
+				self._p.video_streamer.start(url=self._p.plugin.get_video_stream_url())
 
 			def video_stream_paused(self):
 				self._p.video_streamer.stop()
