@@ -90,19 +90,19 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 			)
 		)
 
-	@octoprint.plugin.BlueprintPlugin.route("/authorize", methods=["GET"])
+	@octoprint.plugin.BlueprintPlugin.route("/authorize", methods=["POST"])
 	@admin_permission.require(403)
 	def oauth_octoprint(self):
 		self._main.start(from_oauth=True)
 		return ''
 
-	@octoprint.plugin.BlueprintPlugin.route("/disable", methods=["GET"])
+	@octoprint.plugin.BlueprintPlugin.route("/disable", methods=["POST"])
 	@admin_permission.require(403)
 	def disable_api(self):
 		self._main.disable()
 		return ''
 
-	@octoprint.plugin.BlueprintPlugin.route("/reconnect", methods=["GET"])
+	@octoprint.plugin.BlueprintPlugin.route("/reconnect", methods=["POST"])
 	@admin_permission.require(403)
 	def reconnect(self):
 		self._main.reconnect()
