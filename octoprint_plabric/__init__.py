@@ -48,6 +48,14 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 			self._host = 'localhost'
 		return "http://%s:%d" % (self._host, self._port)
 
+	def get_video_stream_url(self):
+		try:
+			url = settings().get(["webcam", "stream"])
+			return _utils.check_video_stream_url(url=url)
+		except Exception:
+			pass
+		return None
+
 	def update_ui_status(self):
 		self._plugin_manager.send_plugin_message(self._identifier, self.get_template_vars())
 
