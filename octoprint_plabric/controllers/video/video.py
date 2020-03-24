@@ -35,10 +35,10 @@ class VideoStreamer:
 		except Exception as e:
 			_logger.warn(e)
 
-	def _stream_from_url(self, url=None):
-		_logger.log('Video stream: Start from url')
+	def _stream_from_url(self, url):
+		_logger.log('Video stream: Start from url %s' % url)
 		try:
-			self._stream(ffmpeg.input(url if url else 'http://localhost:8080/?action=stream'))
+			self._stream(ffmpeg.input(url))
 		except Exception as e:
 			_logger.warn(e)
 
@@ -50,13 +50,12 @@ class VideoStreamer:
 		except Exception as e:
 			_logger.warn(e)
 
-	def start(self):
+	def start(self, url=None):
 		if not self._process:
 			self._shutting_down = False
-
-			url = 'http://localhost:8080/?action=stream'
-			# url = 'http://192.168.1.58:8080/?action=stream'
+			url = url if url else 'http://localhost:8080/webcam/?action=stream'
 			try:
+				_logger.log(url)
 				code = urlopen(url).getcode()
 			except Exception:
 				code = 404
