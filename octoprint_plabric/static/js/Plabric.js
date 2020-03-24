@@ -7,23 +7,7 @@
 $(function() {
     function PlabricViewModel(parameters) {
         var self = this;
-
-        self.settings = parameters[0];
-        self.plabric_token = ko.observable(plabric_variables.plabric_token);
-        self.step = ko.observable(plabric_variables.step);
-        self.error = ko.observable(plabric_variables.error);
-        self.loading = ko.observable(plabric_variables.loading);
-
-        self.onDataUpdaterPluginMessage = function (plugin, data) {
-            if (plugin !== "Plabric") {
-                return;
-            } else {
-                self.plabric_token(data.plabric_token);
-                self.step(data.step);
-                self.error(data.error);
-                self.loading(data.loading);
-            }
-        };
+        self.plabric = parameters[0];
 
         self.login = function () {
             $.ajax({
@@ -67,7 +51,7 @@ $(function() {
 
     OCTOPRINT_VIEWMODELS.push({
         construct: PlabricViewModel,
-        dependencies: ["settingsViewModel"],
+        dependencies: ["plabricStatusViewModel"],
         elements: ["#settings_plugin_Plabric"]
     });
 });
