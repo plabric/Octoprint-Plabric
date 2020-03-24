@@ -28,6 +28,8 @@ def is_python3():
 
 
 def check_video_stream_url(url):
+	if url == '/webcam/?action=stream':
+		return 'http://localhost:8080/?action=stream'
 	if is_python3():
 		from urllib.parse import urlparse
 		result = urlparse(url)
