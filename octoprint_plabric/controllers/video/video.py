@@ -53,7 +53,7 @@ class VideoStreamer:
 	def start(self, url=None):
 		if not self._process:
 			self._shutting_down = False
-			url = url if url else 'http://localhost:8080/webcam/?action=stream'
+			url = url if url else 'http://localhost:8080/?action=stream'
 			try:
 				_logger.log(url)
 				code = urlopen(url).getcode()
