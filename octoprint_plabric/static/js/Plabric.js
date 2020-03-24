@@ -43,6 +43,7 @@ $(function() {
                 type: "POST",
                 url: "/plugin/Plabric/disable",
                 success: function (data) {
+                    console.log("Plabric: Disable request sent");
                 },
                 error: function (error) {
                     console.error("Plabric: Unable to retrieve register status");
@@ -55,6 +56,7 @@ $(function() {
                 type: "POST",
                 url: "/plugin/Plabric/reconnect",
                 success: function (data) {
+                    console.log("Plabric: Reconnection request sent");
                 },
                 error: function (error) {
                     console.error("Plabric: Unable to connect");
