@@ -59,7 +59,7 @@ class Main:
 		_logger.log('Starting')
 		self.set_error('')
 		if from_oauth and not self.plabric_api_key:
-			f = self.request_app_token
+			f = self.probe_plugin_appkeys
 		else:
 			f = self.connect
 
