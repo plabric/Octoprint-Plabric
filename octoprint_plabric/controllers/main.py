@@ -297,6 +297,24 @@ class Main:
 		host = self.plugin.get_host()
 		self.octoprint_socket = OctoprintSocket(domain=host, callback=Response(self))
 
+	def probe_plugin_appkeys(self):
+		_logger.log('Octoprint API: Probe plugin appkeys')
+		self.set_loading(True)
+
+		class Response(APIProtocol):
+			def __init__(self, p):
+				self._p = p
+
+			def on_succeed(self, data):
+				self._p.request_app_token()
+
+			def on_error(self, error):
+				self._p.set_error('You have to install Application Keys Plugin for grant access to Plabric or update your Octoprint version to version >= 1.3.10')
+				self._p.disconnect()
+
+		self.set_step(Step.OCTOPRINT_OAUTH)
+		self.octoprint_api.probe_plugin_appkeys(callback=Response(self))
+
 	def request_app_token(self):
 		_logger.log('Octoprint API: Request app token')
 		self.set_loading(True)
