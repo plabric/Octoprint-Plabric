@@ -27,6 +27,9 @@ class OctoprintAPI(API):
 			h['Content-Length'] = str(len(data))
 		return h
 
+	def probe_plugin_appkeys(self, callback):
+		self.get(path='/plugin/appkeys/probe', callback=callback)
+
 	def request_app_token(self, callback):
 		self.post(path='/plugin/appkeys/request', params={'app': 'Plabric'}, callback=callback)
 
