@@ -46,10 +46,13 @@ class OctoprintAPI(API):
 			self.get(path=action.path, headers=self.get_headers(), callback=callback)
 
 		elif action.method == Method.POST:
-			if not action.download_first:
-				self.post(path=action.path, params=action.params, headers=self.get_headers(), callback=callback)
-			else:
+			if action.download_first:
 				callback.on_download_first(data)
+			elif action.create_folder:
+				self.create_folder(data=data, callback=callback)
+			else:
+				self.post(path=action.path, params=action.params, headers=self.get_headers(), callback=callback)
+
 		elif action.method == Method.PUT:
 			self.put(path=action.path, params=action.params, headers=self.get_headers(), callback=callback)
 		elif action.method == Method.PATCH:
@@ -66,6 +69,12 @@ class OctoprintAPI(API):
 		files = {"file": ("%s.gcode" % file_name, open(file_path, "rb").read())}
 		payload = {'path': 'plabric/tmp', 'select': 'true', 'print': 'false'}
 		self._execute(requests.post(self._get_url(action.path), data=payload, files=files, headers={'X-Api-Key': self._api_key}), callback)
+
+	def create_folder(self, data, callback):
+		action = DataAction(raw=data)
+		payload = {'foldername': data['params']['foldername']}
+		self._execute(requests.post(self._get_url(action.path), data=payload, headers={'X-Api-Key': self._api_key}),
+					  callback)
 
 
 class Method(Enum):
@@ -85,6 +94,7 @@ class DataAction:
 		self.path = None
 		self.params = None
 		self.download_first = False
+		self.create_folder = False
 		self.parse()
 
 	def parse(self):
@@ -93,4 +103,8 @@ class DataAction:
 		if 'params' in self.raw:
 			self.params = self.raw['params']
 		if self.method == Method.POST and self.raw['api'] == 'files':
-			self.download_first = True
+			if self.params and 'file_id' in self.params:
+				self.download_first = True
+			if self.params and 'foldername' in self.params:
+				self.create_folder = True
+
