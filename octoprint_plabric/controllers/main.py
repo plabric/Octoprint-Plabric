@@ -86,14 +86,14 @@ class Main:
 	def _init_plabric_api(self):
 		self.plabric_api = PlabricAPI(domain=config.HOST_PLABRIC_API)
 
-	def download_temporal_file(self, data, callback):
+	def download_temporal_file(self, data):
 		class Response(APIProtocol):
 			def __init__(self, p, file_path):
 				self._p = p
 				self._file_path = file_path
 
 			def on_succeed(self, response):
-				self._p.upload_file(data=data, file_path=self._file_path, callback=callback)
+				self._p.upload_file(data=data, file_path=self._file_path)
 
 			def on_error(self, error):
 				self._p.set_error(error)
@@ -101,17 +101,17 @@ class Main:
 		destination = Storage(self.plugin).get_file_temporal_path("tmp.gcode")
 		self.plabric_api.download_temporal_file(file_id=data['params']['file_id'], destination=destination, plabric_api_key=self.plabric_api_key, callback=Response(self, file_path=destination))
 
-	def upload_file(self, data, file_path, callback):
+	def upload_file(self, data, file_path):
 		class Response(APIProtocol):
 			def __init__(self, p):
 				self._p = p
 
 			def on_succeed(self, response):
 				Storage(self._p.plugin).delete_file_temporal(path=file_path)
-				callback.on_succeed(data)
+				self._p.call_octoprint_api_succeed(data=data, response=response)
 
 			def on_error(self, error):
-				callback.on_error(error)
+				self._p.call_octoprint_api_error(data=data, error=error)
 
 		self.octoprint_api.upload_file(data=data, file_path=file_path, callback=Response(self))
 
@@ -272,6 +272,16 @@ class Main:
 
 		self.octoprint_api.login(octoprint_api_key=octoprint_api_key, callback=Response(self))
 
+	def call_octoprint_api_succeed(self, data, response):
+		if response:
+			data['response'] = response
+		data['status_code'] = 200
+		self.plabric_socket.send_msg(key='api_command_response', data=data)
+
+	def call_octoprint_api_error(self, data, error):
+		data['status_code'] = error
+		self.plabric_socket.send_msg(key='api_command_response', data=data)
+
 	def call_octoprint_api(self, data):
 
 		class APIResponse(OctoprintAPIProtocol):
@@ -279,17 +289,15 @@ class Main:
 				self._p = p
 
 			def on_succeed(self, response):
-				if response:
-					data['response'] = response
-				data['status_code'] = 200
-				self._p.plabric_socket.send_msg(key='api_command_response', data=data)
+				self._p.call_octoprint_api_succeed(data=data, response=response)
 
 			def on_error(self, error):
-				data['status_code'] = error
-				self._p.plabric_socket.send_msg(key='api_command_response', data=data)
+				self._p.call_octoprint_api_error(data=data, error=error)
 
-			def on_download_first(self, response):
-				self._p.download_temporal_file(data=response, callback=self)
+			def on_download_first(self, data):
+				thread = threading.Thread(target=self._p.download_temporal_file, args=(data,))
+				thread.daemon = True
+				thread.start()
 
 		self.octoprint_api.call_method(data=data, callback=APIResponse(self))
 
