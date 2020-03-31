@@ -365,6 +365,7 @@ class Main:
 			def on_succeed(self, data):
 				if 'api_key' in data:
 					self._p.octoprint_api_key = data['api_key']
+					self._p.octoprint_api.login(octoprint_api_key=self._p.octoprint_api_key, callback=None)
 					self._p.request_plabric_token()
 				else:
 					if count < 4:
