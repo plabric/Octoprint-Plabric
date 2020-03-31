@@ -56,7 +56,7 @@ class OctoprintSocket:
 			def _on_open(ws):
 				_logger.log('Octoprint Socket: Ws Opened')
 				self._ws.send(_json.dumps({'auth': '%s:%s' % (username, session)}))
-				self._ws.send(_json.dumps({'throttle': 6}))
+				self._ws.send(_json.dumps({'throttle': 10}))
 				self._callback.connected()
 
 			try:
