@@ -156,6 +156,7 @@ class Main:
 					self._p.load_webrtc_servers()
 
 				self._p.set_step(Step.CONNECTED)
+				self._p.send_metadata()
 
 			def on_config_done(self):
 				self._p.set_step(Step.READY)
@@ -181,6 +182,16 @@ class Main:
 				self._p.plabric_webrtc.on_signaling(data)
 
 		self.plabric_socket = PlabricSocket(domain=config.HOST_PLABRIC_API, callback=Response(self))
+
+	def send_metadata(self):
+		plugin_version = self.plugin.get_version()
+		machine = _utils.machine()
+		system = _utils.system()
+		camera_type = _utils.camera_type()
+		pi_version = _utils.pi_version()
+		self.plabric_api.send_metadata(plabric_api_key=self.plabric_api_key, plugin_version=plugin_version,
+									   machine=machine,
+									   system=system, camera_type=camera_type, pi_version=pi_version, callback=None)
 
 	def load_webrtc_servers(self):
 		class Response(APIProtocol):
