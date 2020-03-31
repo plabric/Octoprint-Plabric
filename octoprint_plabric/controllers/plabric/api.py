@@ -20,6 +20,9 @@ class PlabricAPI(API):
 	def send_event(self, plabric_api_key, event, callback):
 		self.post(path='/octoprint/plugin/printer/event', params={'api_key': plabric_api_key, 'event': event}, callback=callback)
 
+	def send_metadata(self, plabric_api_key, plugin_version, machine, system, camera_type, pi_version, callback):
+		self.post(path='/octoprint/plugin/metadata', params={'api_key': plabric_api_key, 'p': plugin_version, 'm': machine, 's': system, 'c': camera_type, 'r': pi_version}, callback=callback)
+
 	def download_temporal_file(self, plabric_api_key, file_id, destination, callback):
 		class Response(APIProtocol):
 			def __init__(self, p, destination, callback):
