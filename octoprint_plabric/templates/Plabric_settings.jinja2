@@ -13,7 +13,7 @@
         <li> {{ _("Create new printer profile and follow the steps provided in the app for connect your printer.") }}</li>
         <li> {{ _("Finally come back and click the button below.") }}</li>
     </ul>
-    <p style="color:red" data-bind="visible: plabric.error() !== undefined && plabric.error().length > 0, text: plabric.error"></p>
+    <p style="color:red; max-width: 600px;" data-bind="visible: plabric.error() !== undefined && plabric.error().length > 0, text: plabric.error"></p>
 
     <div data-bind="visible: !plabric.loading()">
         <a class="btn btn-primary" data-bind="click: login">{{ _("Connect with my Plabric Account") }}</a>
