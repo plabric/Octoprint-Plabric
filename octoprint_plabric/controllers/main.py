@@ -228,7 +228,10 @@ class Main:
 				pass
 
 			def video_stream_started(self):
-				self._p.video_streamer.start(url=self._p.plugin.get_video_stream_url())
+				self._p.video_streamer.start(url=self._p.plugin.get_video_stream_url(),
+												flip_horizontally='flipH' in self._p.plugin.get_webcam_params(),
+												flip_vertically='flipV' in self._p.plugin.get_webcam_params(),
+												rotate_90_clockwise='rotate90' in self._p.plugin.get_webcam_params())
 
 			def video_stream_paused(self):
 				self._p.video_streamer.stop()
