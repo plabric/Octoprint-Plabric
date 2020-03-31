@@ -52,7 +52,7 @@ class API(object):
 					try:
 						callback.on_succeed(resp.json())
 					except Exception as e:
-						pass
+						callback.on_succeed(None)
 			else:
 				_logger.log('%s: Error - %d' % (self._name, status))
 				if callback:
