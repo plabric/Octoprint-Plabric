@@ -58,6 +58,9 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 			pass
 		return None
 
+	def get_webcam_params(self):
+		return settings().get(["webcam"])
+
 	def update_ui_status(self):
 		self._plugin_manager.send_plugin_message(self._identifier, self.get_template_vars())
 
