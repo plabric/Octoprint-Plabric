@@ -63,3 +63,14 @@
         </div>
     </div>
 </div>
+
+<div style="margin-top: 30px;">
+    <a data-bind="visible: !advanced_options_enabled(), click: advanced">{{ _("Show Advanced Options") }}</a>
+    <a data-bind="visible: advanced_options_enabled(), click: advanced">{{ _("Hide Advanced Options") }}</a>
+    <div data-bind="visible: advanced_options_enabled()" style="margin-top: 5px">
+        <div>
+            <a data-bind="visible: plabric.navbar_enabled(), click: switch_navbar">{{ _("Disable Plabric status information on Octoprint Navbar") }}</a>
+            <a data-bind="visible: !plabric.navbar_enabled(), click: switch_navbar">{{ _("Enable Plabric status information on Octoprint Navbar") }}</a>
+        </div>
+    </div>
+</div>
