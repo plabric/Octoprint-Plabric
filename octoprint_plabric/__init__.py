@@ -135,7 +135,7 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 
 	@octoprint.plugin.BlueprintPlugin.route("/navbar/switch", methods=["POST"])
 	@admin_permission.require(403)
-	def reconnect(self):
+	def navbar_switch(self):
 		enabled = self.get_navbar_enabled()
 		_storage.Storage(plugin=self).save_setting('navbar_enabled', not enabled)
 		self.update_ui_status()
