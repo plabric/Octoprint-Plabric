@@ -9,6 +9,7 @@ $(function() {
         self.loading = ko.observable(false);
         self.status = ko.observable(null);
         self.status_color = ko.observable(null);
+        self.navbar_enabled = ko.observable(true);
 
         self.refreshState = function(state) {
             self.plabric_token(state.plabric_token);
@@ -16,6 +17,7 @@ $(function() {
             self.error(state.error);
             self.loading(state.loading);
             self.status(state.status);
+            self.navbar_enabled(state.navbar_enabled);
             setStatusColor();
         };
 
