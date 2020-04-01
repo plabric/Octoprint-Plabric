@@ -1,76 +1,78 @@
-<h4>Plabric</h4>
+<div class="plabric">
+    <h4>Plabric</h4>
 
-<div data-bind="visible: plabric.step() == 'error_connection'">
-    <p>{{ _("Plabric Plugin is installed but the connection can't be established.") }}</p>
-    <a class="btn btn-primary" data-bind="click: reconnect">{{ _("Retry connection") }}</a>
-</div>
-
-<div data-bind="visible: plabric.step() == 'login_needed' || plabric.step() == 'octoprint_oauth'">
-    <p>{{ _("Control and monitoring your printer with") }} <a href="https://plabric.com/">Plabric</a></p>
-    <ul>
-        <li> {{ _("Download Plabric app on your phone.") }}</li>
-        <li> {{ _("Create an account.") }}</li>
-        <li> {{ _("Create new printer profile and follow the steps provided in the app for connect your printer.") }}</li>
-        <li> {{ _("Finally come back and click the button below.") }}</li>
-    </ul>
-    <p style="color:red; max-width: 600px;" data-bind="visible: plabric.error() !== undefined && plabric.error().length > 0, text: plabric.error"></p>
-
-    <div data-bind="visible: !plabric.loading()">
-        <a class="btn btn-primary" data-bind="click: login">{{ _("Connect with my Plabric Account") }}</a>
+    <div data-bind="visible: plabric.step() == 'error_connection'">
+        <p>{{ _("Plabric Plugin is installed but the connection can't be established.") }}</p>
+        <a class="btn btn-primary" data-bind="click: reconnect">{{ _("Retry connection") }}</a>
     </div>
-    <div data-bind="visible: plabric.loading()">
-        <div class="loader">
-            <svg class="circular">
-                <circle class="path" cx="25" cy="25" r="10" fill="none" stroke-width="3" stroke-miterlimit="10"></circle>
-            </svg>
+
+    <div data-bind="visible: plabric.step() == 'login_needed' || plabric.step() == 'octoprint_oauth'">
+        <p>{{ _("Control and monitoring your printer with") }} <a href="https://plabric.com/">Plabric</a></p>
+        <ul>
+            <li> {{ _("Download Plabric app on your phone.") }}</li>
+            <li> {{ _("Create an account.") }}</li>
+            <li> {{ _("Create new printer profile and follow the steps provided in the app for connect your printer.") }}</li>
+            <li> {{ _("Finally come back and click the button below.") }}</li>
+        </ul>
+        <p style="color:red; max-width: 600px;" data-bind="visible: plabric.error() !== undefined && plabric.error().length > 0, text: plabric.error"></p>
+
+        <div data-bind="visible: !plabric.loading()">
+            <a class="btn btn-primary" data-bind="click: login">{{ _("Connect with my Plabric Account") }}</a>
+        </div>
+        <div data-bind="visible: plabric.loading()">
+            <div class="loader">
+                <svg class="circular">
+                    <circle class="path" cx="25" cy="25" r="10" fill="none" stroke-width="3" stroke-miterlimit="10"></circle>
+                </svg>
+            </div>
+        </div>
+        <p style="margin-top: 10px; margin-bottom: 0px">{{ _('Do you have any question or problem installing the plugin? Contact us at:') }}  <a href="mailto: contact@plabric.com">contact@plabric.com</a></p>
+        <p style="font-size: 12px;">{{ _("For the moment, video stream is only available on x86_64 and armv7l (Raspberry) linux systems.") }}</p>
+
+    </div>
+
+    <div data-bind="visible: plabric.step() == 'qr_read'">
+        <p>{{ _("Scan this QR with Plabric for configure the connection.") }}</p>
+        <p>{{ _("You can find the scanner under printer connections. Follow the steps in the app for connect.") }}</p>
+        <div data-bind="qrcode: {text: plabric.plabric_token, size: 180}"></div>
+
+        <div data-bind="visible: !plabric.loading()">
+            <a class="btn btn-danger" data-bind="click: disable">{{ _("Cancel") }}</a>
+        </div>
+        <div data-bind="visible: plabric.loading()">
+            <div class="loader">
+                <svg class="circular">
+                    <circle class="path" cx="25" cy="25" r="10" fill="none" stroke-width="3" stroke-miterlimit="10"></circle>
+                </svg>
+            </div>
         </div>
     </div>
-    <p style="margin-top: 10px; margin-bottom: 0px">{{ _('Do you have any question or problem installing the plugin? Contact us at:') }}  <a href="mailto: contact@plabric.com">contact@plabric.com</a></p>
-    <p style="font-size: 12px;">{{ _("For the moment, video stream is only available on x86_64 and armv7l (Raspberry) linux systems.") }}</p>
 
-</div>
+    <div data-bind="visible: plabric.step() == 'ready' || plabric.step() == 'connected'">
+        <p>{{ _("Octroprint is connected and ready for use with Plabric.") }}</p>
+        <p>{{ _("You can disable Plabric access in the printer settings section in Plabric app or clicking the button below.") }}</p>
+        <br>
 
-<div data-bind="visible: plabric.step() == 'qr_read'">
-    <p>{{ _("Scan this QR with Plabric for configure the connection.") }}</p>
-    <p>{{ _("You can find the scanner under printer connections. Follow the steps in the app for connect.") }}</p>
-    <div data-bind="qrcode: {text: plabric.plabric_token, size: 180}"></div>
-
-    <div data-bind="visible: !plabric.loading()">
-        <a class="btn btn-danger" data-bind="click: disable">{{ _("Cancel") }}</a>
-    </div>
-    <div data-bind="visible: plabric.loading()">
-        <div class="loader">
-            <svg class="circular">
-                <circle class="path" cx="25" cy="25" r="10" fill="none" stroke-width="3" stroke-miterlimit="10"></circle>
-            </svg>
+        <div data-bind="visible: !plabric.loading()">
+            <a class="btn btn-danger" data-bind="click: disable">{{ _("Disable Plabric Plugin") }}</a>
+        </div>
+        <div data-bind="visible: plabric.loading()">
+            <div class="loader">
+                <svg class="circular">
+                    <circle class="path" cx="25" cy="25" r="10" fill="none" stroke-width="3" stroke-miterlimit="10"></circle>
+                </svg>
+            </div>
         </div>
     </div>
-</div>
 
-<div data-bind="visible: plabric.step() == 'ready' || plabric.step() == 'connected'">
-    <p>{{ _("Octroprint is connected and ready for use with Plabric.") }}</p>
-    <p>{{ _("You can disable Plabric access in the printer settings section in Plabric app or clicking the button below.") }}</p>
-    <br>
-
-    <div data-bind="visible: !plabric.loading()">
-       <a class="btn btn-danger" data-bind="click: disable">{{ _("Disable Plabric Plugin") }}</a>
-    </div>
-    <div data-bind="visible: plabric.loading()">
-        <div class="loader">
-            <svg class="circular">
-                <circle class="path" cx="25" cy="25" r="10" fill="none" stroke-width="3" stroke-miterlimit="10"></circle>
-            </svg>
-        </div>
-    </div>
-</div>
-
-<div style="margin-top: 30px;">
-    <a data-bind="visible: !advanced_options_enabled(), click: advanced">{{ _("Show Advanced Options") }}</a>
-    <a data-bind="visible: advanced_options_enabled(), click: advanced">{{ _("Hide Advanced Options") }}</a>
-    <div data-bind="visible: advanced_options_enabled()" style="margin-top: 5px">
-        <div>
-            <a data-bind="visible: plabric.navbar_enabled(), click: switch_navbar">{{ _("Disable Plabric status information on Octoprint Navbar") }}</a>
-            <a data-bind="visible: !plabric.navbar_enabled(), click: switch_navbar">{{ _("Enable Plabric status information on Octoprint Navbar") }}</a>
+    <div style="margin-top: 30px;">
+        <a data-bind="visible: !advanced_options_enabled(), click: advanced">{{ _("Show Advanced Options") }}</a>
+        <a data-bind="visible: advanced_options_enabled(), click: advanced">{{ _("Hide Advanced Options") }}</a>
+        <div data-bind="visible: advanced_options_enabled()" style="margin-top: 5px">
+            <div>
+                <a data-bind="visible: plabric.navbar_enabled(), click: switch_navbar">{{ _("Disable Plabric status information on Octoprint Navbar") }}</a>
+                <a data-bind="visible: !plabric.navbar_enabled(), click: switch_navbar">{{ _("Enable Plabric status information on Octoprint Navbar") }}</a>
+            </div>
         </div>
     </div>
 </div>
