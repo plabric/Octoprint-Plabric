@@ -6,7 +6,7 @@ from octoprint.server import admin_permission
 from octoprint.settings import settings
 
 from octoprint_plabric import config
-from octoprint_plabric.controllers.common import logger as _logger, utils as _utils
+from octoprint_plabric.controllers.common import logger as _logger, utils as _utils, storage as _storage
 from octoprint_plabric.controllers.main import Step, Main
 import json as _json
 
@@ -70,11 +70,18 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 			dict(type="settings", custom_bindings=True)
 		]
 
+	def get_navbar_enabled(self):
+		enabled = _storage.Storage(plugin=self).get_saved_setting('navbar_enabled')
+		if enabled is None:
+			_storage.Storage(plugin=self).save_setting('navbar_enabled', True)
+			return True
+		return enabled
+
 	def get_template_vars(self):
 		if self._main:
-			return dict(plabric_token=self._main.plabric_token, step=self._main.step.value, status=self._main.get_status(), error=self._main.error, loading=self._main.loading)
+			return dict(plabric_token=self._main.plabric_token, step=self._main.step.value, status=self._main.get_status(), error=self._main.error, loading=self._main.loading, navbar_enabled=self.get_navbar_enabled())
 		else:
-			return dict(plabric_token=None, step=Step.LOGIN_NEEDED.value, status='Login need', error='', loading=False)
+			return dict(plabric_token=None, step=Step.LOGIN_NEEDED.value, status='Login need', error='', loading=False, navbar_enabled=self.get_navbar_enabled())
 
 	# ~~ AssetPlugin mixin
 	def get_assets(self):
@@ -124,6 +131,14 @@ class PlabricPlugin(octoprint.plugin.SettingsPlugin,
 	@admin_permission.require(403)
 	def reconnect(self):
 		self._main.reconnect()
+		return ''
+
+	@octoprint.plugin.BlueprintPlugin.route("/navbar/switch", methods=["POST"])
+	@admin_permission.require(403)
+	def reconnect(self):
+		enabled = self.get_navbar_enabled()
+		_storage.Storage(plugin=self).save_setting('navbar_enabled', not enabled)
+		self.update_ui_status()
 		return ''
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
