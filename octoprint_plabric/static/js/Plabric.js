@@ -8,6 +8,7 @@ $(function() {
     function PlabricViewModel(parameters) {
         var self = this;
         self.plabric = parameters[0];
+        self.advanced_options_enabled = ko.observable(false);
 
         self.login = function () {
             $.ajax({
@@ -45,6 +46,19 @@ $(function() {
                 error: function (error) {
                     console.error("Plabric: Unable to connect");
                 }
+            });
+        };
+
+        self.advanced = function () {
+            self.advanced_options_enabled(!self.advanced_options_enabled());
+        };
+
+        self.switch_navbar = function () {
+            $.ajax({
+                type: "POST",
+                url: "/plugin/Plabric/navbar/switch",
+                success: function (data) {},
+                error: function (error) {}
             });
         };
     }
