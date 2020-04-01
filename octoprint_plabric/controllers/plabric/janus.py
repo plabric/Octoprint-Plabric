@@ -65,6 +65,7 @@ class Janus:
 				self._janus_dir = os.path.join(config.JANUS_DIR, 'linux', 'x86_64')
 				self._enabled = True
 		else:
+			self._janus_dir = None
 			_logger.log('Unable to start janus on %s system' % system)
 
 	def run(self, json_servers):
