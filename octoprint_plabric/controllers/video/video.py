@@ -1,6 +1,9 @@
+import os
 import threading
 from collections import deque
 import ffmpeg
+
+from octoprint_plabric import config
 from octoprint_plabric.controllers.common import logger as _logger, utils as _utils
 
 if _utils.is_python3():
@@ -18,7 +21,7 @@ class VideoStreamProtocol:
 
 
 class VideoStreamer:
-	def __init__(self, janus_url, port, is_raspberry=False):
+	def __init__(self, janus_url, port, machine, system, is_raspberry=False):
 		self._url = "rtp://%s:%d?pkt_size=1300" % (janus_url, port)
 		self._callback = None
 		self._process = None
@@ -27,6 +30,18 @@ class VideoStreamer:
 		self._flip_horizontally = False
 		self._flip_vertically = False
 		self._rotate_90_clockwise = False
+		self._enabled = False
+
+		if system == 'Linux':
+			if machine == 'armv7l':
+				self._ffmpeg_dir = os.path.join(config.FFMPEG_DIR, 'linux', 'armv7l', 'ffmpeg')
+				self._enabled = True
+			else:
+				self._ffmpeg_dir = os.path.join(config.FFMPEG_DIR, 'linux', 'x86_64', 'ffmpeg')
+				self._enabled = True
+		else:
+			self._ffmpeg_dir = None
+			_logger.log('Unable to start ffmpeg on %s system' % system)
 
 	def set_callback(self, callback):
 		self._callback = callback
@@ -54,30 +69,31 @@ class VideoStreamer:
 		try:
 			self._process = base\
 				.output(self._url, format='rtp', vcodec=self._vcodec, pix_fmt='yuv420p', an=None, preset='medium', crf=17, ** extra_arguments)\
-				.run_async(pipe_stdin=True, pipe_stderr=True, quiet=True)
+				.run_async(cmd=self._ffmpeg_dir, pipe_stdin=True, pipe_stderr=True, quiet=True)
 		except Exception as e:
 			_logger.warn(e)
 
 	def start(self, url=None, flip_horizontally=False, flip_vertically=False, rotate_90_clockwise=False):
-		if not self._process:
-			self._flip_horizontally = flip_horizontally
-			self._flip_vertically = flip_vertically
-			self._rotate_90_clockwise = rotate_90_clockwise
+		if self._enabled:
+			if not self._process:
+				self._flip_horizontally = flip_horizontally
+				self._flip_vertically = flip_vertically
+				self._rotate_90_clockwise = rotate_90_clockwise
 
-			self._shutting_down = False
-			url = url if url else 'http://localhost:8080/?action=stream'
-			try:
-				_logger.log(url)
-				code = urlopen(url).getcode()
-			except Exception:
-				code = 404
+				self._shutting_down = False
+				url = url if url else 'http://localhost:8080/?action=stream'
+				try:
+					_logger.log(url)
+					code = urlopen(url).getcode()
+				except Exception:
+					code = 404
 
-			if code == 200:
-				self._stream_from_url(url=url)
-			else:
-				self._stream_from_device()
+				if code == 200:
+					self._stream_from_url(url=url)
+				else:
+					self._stream_from_device()
 
-			self.monitor(self._process)
+				self.monitor(self._process)
 
 	def stop(self):
 		if self._process:
