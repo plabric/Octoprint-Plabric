@@ -72,9 +72,8 @@ class OctoprintAPI(API):
 
 	def create_folder(self, data, callback):
 		action = DataAction(raw=data)
-		payload = {'foldername': data['params']['foldername']}
-		self._execute(requests.post(self._get_url(action.path), data=payload, headers={'X-Api-Key': self._api_key}),
-					  callback)
+		payload = {'foldername': data['params']['foldername'], 'path': action.path.replace('/api/files/local', '')}
+		self._execute(requests.post(self._get_url('/api/files/local'), data=payload, headers={'X-Api-Key': self._api_key}), callback)
 
 
 class Method(Enum):
