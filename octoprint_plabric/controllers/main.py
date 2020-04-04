@@ -148,6 +148,7 @@ class Main:
 				self._p.plabric_webrtc.disconnect()
 
 			def on_user_joined(self, user_nick, octoprint_api_key):
+				self._p.plabric_socket.send_msg('ready')
 				self._p.octoprint_api_key = octoprint_api_key
 				self._p.user_nick = user_nick
 
