@@ -126,6 +126,7 @@ class Main:
 				self._p.plabric_socket.send_msg(key='jr_slave', data={'api_key': self._p.plabric_api_key} if self._p.plabric_api_key else {'token': self._p.plabric_token})
 				if self._p.plabric_api_key:
 					self._p.set_step(Step.READY)
+					self._p.send_metadata()
 				else:
 					if self._p.step == Step.OCTOPRINT_OAUTH:
 						self._p.set_step(Step.QR_READ)
