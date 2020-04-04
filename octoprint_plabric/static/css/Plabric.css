@@ -22,12 +22,12 @@
     stroke-linecap: round;
 }
 
-.plabric @keyframes rotate{
+@keyframes rotate{
     100%{
         transform: rotate(360deg);
     }
 }
-.plabric @keyframes dash{
+@keyframes dash{
     0%{
         stroke-dasharray: 1,200;
         stroke-dashoffset: 0;
@@ -41,7 +41,7 @@
         stroke-dashoffset: -124;
     }
 }
-.plabric @keyframes color{
+@keyframes color{
     100%, 0%{
         stroke: #00A69A;
     }
