@@ -261,7 +261,7 @@ class Main:
 			def janus_running(self):
 				self._p.plabric_socket.send_msg(key='webrtc_ready')
 
-		self.plabric_webrtc = Janus(system=_utils.system(), machine=_utils.machine(), callback=Response(self))
+		self.plabric_webrtc = Janus(system=_utils.system(), machine=_utils.machine(), ports=_utils.get_free_ports(count=3, starting_port=9010), callback=Response(self))
 
 	def _init_video_stream(self):
 		class VideoResponse(VideoStreamProtocol):
