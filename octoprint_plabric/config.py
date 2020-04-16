@@ -10,7 +10,4 @@ FFMPEG_DIR = os.path.join(BASE_DIR, 'bin', 'ffmpeg')
 JANUS_DIR = os.path.join(BASE_DIR, 'bin', 'janus')
 JANUS_RUN_LOCAL = True
 JANUS_HOST = 'localhost'
-JANUS_API_PORT = 9010
-JANUS_WS_PORT = 9011
 JANUS_VIDEO_HOST = 'localhost'
-JANUS_VIDEO_PORT = 9012
