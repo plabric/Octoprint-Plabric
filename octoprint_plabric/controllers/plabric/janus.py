@@ -39,11 +39,14 @@ class JanusProtocol:
 
 class Janus:
 
-	def __init__(self, machine, system, callback=None):
+	def __init__(self, machine, system, ports, callback=None):
 		_logger.log('Janus Socket: Initializing')
 
 		# websocket.enableTrace(True)
-		self._url = 'ws://%s:%d/' % (config.JANUS_HOST, config.JANUS_WS_PORT)
+		self._janus_ws_port = ports[0]
+		self._janus_api_port = ports[1]
+		self._janus_video_port = ports[2]
+		self._url = 'ws://%s:%d/' % (config.JANUS_HOST, self._janus_ws_port)
 		self._janus_thread = None
 		self._janus_proc = None
 		self._ws = None
@@ -88,6 +91,9 @@ class Janus:
 			janus_thread.start()
 		self._callback.janus_running()
 
+	def get_video_port(self):
+		return self._janus_video_port
+
 	def _configure(self, json_servers):
 		if not self._enabled:
 			return
@@ -115,9 +121,9 @@ class Janus:
 														'TURN_SERVER': turn_server, 'TURN_PORT': turn_port,
 														'TURN_USERNAME': turn_username, 'TURN_CREDENTIAL': turn_credential,
 														'STUN_SERVER': stun_server, 'STUN_PORT': stun_port})
-		self._process_config_file(name='janus.transport.http', params={'JANUS_API_PORT': config.JANUS_API_PORT})
-		self._process_config_file(name='janus.transport.websockets', params={'JANUS_WS_PORT': config.JANUS_WS_PORT})
-		self._process_config_file(name='janus.plugin.streaming', params={'JANUS_VIDEO_PORT': config.JANUS_VIDEO_PORT})
+		self._process_config_file(name='janus.transport.http', params={'JANUS_API_PORT': self._janus_api_port})
+		self._process_config_file(name='janus.transport.websockets', params={'JANUS_WS_PORT': self._janus_ws_port})
+		self._process_config_file(name='janus.plugin.streaming', params={'JANUS_VIDEO_PORT': self._janus_video_port})
 
 	def _process_config_file(self, name, params):
 		janus_conf_template = os.path.join(self._janus_dir, 'etc/janus/%s.jcfg.template' % name)
