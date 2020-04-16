@@ -73,9 +73,11 @@ class PlabricSocket:
 		if self._sio and self._sio.connected:
 			self._sio.disconnect()
 
-	def send_msg(self, key, data=None):
+	def send_msg(self, key, data=None, json=None):
 		if self._sio.connected:
-			self._sio.emit(key, data, namespace=config.PLABRIC_SOCKET_NAMESPACE) if data else self._sio.emit(key, namespace=config.PLABRIC_SOCKET_NAMESPACE)
+			data_json = _json.dumps(data) if data else None
+			data_json = json if json else data_json
+			self._sio.emit(key, data_json, namespace=config.PLABRIC_SOCKET_NAMESPACE) if data_json else self._sio.emit(key, namespace=config.PLABRIC_SOCKET_NAMESPACE)
 
 	def _add_event_handlers(self):
 		@self._sio.on('connect', namespace=config.PLABRIC_SOCKET_NAMESPACE)
@@ -94,6 +96,7 @@ class PlabricSocket:
 		def user_joined(data):
 			_logger.log('Plabric Socket: User joined')
 			if self._callback:
+				data = _json.loads(data) if isinstance(data, str) else data
 				user_nick = data['user_nick']
 				octoprint_api_key = data['octoprint_api_key']
 				self._callback.on_user_joined(user_nick, octoprint_api_key)
@@ -114,6 +117,7 @@ class PlabricSocket:
 		def connection_registered(data):
 			_logger.log('Plabric Socket: Connection registered')
 			if self._callback:
+				data = _json.loads(data) if isinstance(data, str) else data
 				api_key = data['api_key']
 				self._callback.on_connection_registered(api_key)
 
@@ -134,4 +138,5 @@ class PlabricSocket:
 		def signaling(data):
 			_logger.log('Plabric Socket: Signaling received')
 			if self._callback:
-				self._callback.on_signaling(data)
+				self._callback.on_signaling(_json.loads(data))
+
