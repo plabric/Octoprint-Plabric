@@ -330,7 +330,7 @@ class Main:
 				self._p = p
 
 			def on_event(self, event):
-				self._p.plabric_socket.send_msg(key='socket_event', data=event)
+				self._p.plabric_socket.send_msg(key='socket_event', json=event)
 
 			def connected(self):
 				pass
