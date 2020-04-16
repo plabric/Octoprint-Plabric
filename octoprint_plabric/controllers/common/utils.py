@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import platform
 import re
 import sys
+import socket
 
 
 def system():
@@ -77,3 +78,16 @@ def valid_url(url):
 		r'(?::\d+)?'
 		r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 	return re.match(regex, url) is not None
+
+
+def get_free_ports(count=3, starting_port=9010):
+	ports = []
+	port = starting_port
+	while len(ports) < count:
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		sock.settimeout(2)  # 2 Second Timeout
+		result = sock.connect_ex(('127.0.0.1', port))
+		if result != 0:
+			ports.append(port)
+		port += 1
+	return ports
