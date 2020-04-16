@@ -274,7 +274,7 @@ class Main:
 			def on_video_stopped(self):
 				self._p.plabric_webrtc.stop_video_stream()
 
-		self.video_streamer = VideoStreamer(janus_url=config.JANUS_VIDEO_HOST, port=config.JANUS_VIDEO_PORT, system=_utils.system(), machine=_utils.machine(), is_raspberry=_utils.is_raspberry())
+		self.video_streamer = VideoStreamer(janus_url=config.JANUS_VIDEO_HOST, port=self.plabric_webrtc.get_video_port(), system=_utils.system(), machine=_utils.machine(), is_raspberry=_utils.is_raspberry())
 		self.video_streamer.set_callback(VideoResponse(self))
 
 	def _init_octoprint_api(self):
