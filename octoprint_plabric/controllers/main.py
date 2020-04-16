@@ -46,6 +46,9 @@ class Main:
 		self.octoprint_api_key = None
 
 		self.init()
+		self._thread = None
+		self._monitor_thread = None
+		self._reconnect = True
 
 	def init(self):
 		self._init_plabric_api()
@@ -63,11 +66,28 @@ class Main:
 		else:
 			f = self.connect
 
-		thread = threading.Thread(target=f)
-		thread.daemon = True
-		thread.start()
+		self._thread = threading.Thread(target=f)
+		self._thread.daemon = True
+		self._thread.start()
+		self.monitor_connection()
+
+	def monitor_connection(self):
+		def tt():
+			while self._thread and self._thread.is_alive():
+				time.sleep(5)
+			_logger.log('Thread not running')
+			if self._thread:
+				self._thread = None
+			if self._reconnect:
+				self._init_plabric_socket()
+				self.start()
+
+		self._monitor_thread = threading.Thread(target=tt)
+		self._monitor_thread.daemon = True
+		self._monitor_thread.start()
 
 	def connect(self):
+		self._reconnect = True
 		self.plabric_socket.connect()
 
 	def set_step(self, step):
@@ -435,6 +455,7 @@ class Main:
 	def disconnect(self):
 		self.set_loading(True)
 		_logger.log('Disconnecting Plabric Plugin')
+		self._reconnect = False
 		self.video_streamer.stop()
 		self.octoprint_socket.disconnect()
 		self.plabric_socket.disconnect()
