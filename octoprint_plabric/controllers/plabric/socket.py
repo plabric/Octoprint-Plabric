@@ -54,6 +54,7 @@ class PlabricSocket:
 			if not self._sio.connected:
 				_logger.log('Plabric Socket: Connecting')
 				self._sio.connect(self._domain, namespaces=[config.PLABRIC_SOCKET_NAMESPACE])
+				self._sio.wait()
 		except (socketio.exceptions.ConnectionError, ValueError) as e:
 			_logger.warn(e)
 			self._callback.on_connection_error()
