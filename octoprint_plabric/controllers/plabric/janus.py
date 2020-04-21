@@ -65,10 +65,10 @@ class Janus:
 		if system == 'Linux':
 			if machine == 'armv7l':
 				self._janus_dir = os.path.join(config.JANUS_DIR, 'linux', 'armv7l')
-				self._enabled = True
 			else:
 				self._janus_dir = os.path.join(config.JANUS_DIR, 'linux', 'x86_64')
-				self._enabled = True
+			self._enabled = True
+			os.system("chmod -R 777 %s" % config.JANUS_DIR)
 		else:
 			self._janus_dir = None
 			_logger.log('Unable to start janus on %s system' % system)
