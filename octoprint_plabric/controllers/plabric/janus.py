@@ -75,9 +75,9 @@ class Janus:
 
 	def run(self, json_servers):
 		if config.JANUS_RUN_LOCAL and self._enabled:
-			_logger.log('Janus: Starting')
 
 			def ll():
+				_logger.log('Janus: Starting')
 				janus_cmd = os.path.join(self._janus_dir, 'run_janus.sh')
 				self._janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -149,7 +149,7 @@ class Janus:
 					fout.write(line)
 
 	def connect(self):
-		if self._ws_thread is None and self._enabled:
+		if self._enabled:
 			_logger.log('Janus: Connecting')
 
 			def _on_error(ws, error):
@@ -180,12 +180,14 @@ class Janus:
 	def disconnect(self):
 		_logger.log('Janus: Disconnecting')
 
-		if self.ws_connected():
+		if self._ws:
 			self._ws.close()
 			self._ws.keep_running = False
 			self._ws_thread = None
-			self._paused = False
-			self._stream_on_start = False
+			self._ws = None
+
+		self._paused = False
+		self._stream_on_start = False
 
 		if self._janus_proc:
 			try:
