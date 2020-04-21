@@ -31,6 +31,7 @@ class VideoStreamer:
 		self._flip_vertically = False
 		self._rotate_90_clockwise = False
 		self._enabled = False
+		self._extra_arguments = {'s': '640x480', 'b:v': 500000}
 
 		if system == 'Linux':
 			if machine == 'armv7l':
@@ -39,6 +40,9 @@ class VideoStreamer:
 			else:
 				self._ffmpeg_dir = os.path.join(config.FFMPEG_DIR, 'linux', 'x86_64', 'ffmpeg')
 				self._enabled = True
+				self._extra_arguments['preset'] = 'medium'
+				self._extra_arguments['crf'] = 17
+				self._extra_arguments['tune'] = 'zerolatency'
 		else:
 			self._ffmpeg_dir = None
 			_logger.log('Unable to start ffmpeg on %s system' % system)
@@ -61,14 +65,14 @@ class VideoStreamer:
 			_logger.warn(e)
 
 	def _stream(self, base):
-		extra_arguments = {'tune': 'zerolatency', 's': '640x480', 'b:v': 500000}
+		arguments = self._extra_arguments
 		r = self.get_rotation_params()
 		if r:
-			extra_arguments['vf'] = r
+			arguments['vf'] = r
 
 		try:
 			self._process = base\
-				.output(self._url, format='rtp', vcodec=self._vcodec, pix_fmt='yuv420p', an=None, preset='medium', crf=17, ** extra_arguments)\
+				.output(self._url, format='rtp', vcodec=self._vcodec, pix_fmt='yuv420p', an=None, ** arguments)\
 				.run_async(cmd=self._ffmpeg_dir, pipe_stdin=True, pipe_stderr=True, quiet=True)
 		except Exception as e:
 			_logger.warn(e)
