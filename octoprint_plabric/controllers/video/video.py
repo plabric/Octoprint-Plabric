@@ -36,13 +36,13 @@ class VideoStreamer:
 		if system == 'Linux':
 			if machine == 'armv7l':
 				self._ffmpeg_dir = os.path.join(config.FFMPEG_DIR, 'linux', 'armv7l', 'ffmpeg')
-				self._enabled = True
 			else:
 				self._ffmpeg_dir = os.path.join(config.FFMPEG_DIR, 'linux', 'x86_64', 'ffmpeg')
-				self._enabled = True
 				self._extra_arguments['preset'] = 'medium'
 				self._extra_arguments['crf'] = 17
 				self._extra_arguments['tune'] = 'zerolatency'
+			self._enabled = True
+			os.system("chmod -R 777 %s" % config.FFMPEG_DIR)
 		else:
 			self._ffmpeg_dir = None
 			_logger.log('Unable to start ffmpeg on %s system' % system)
