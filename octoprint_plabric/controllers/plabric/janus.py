@@ -1,6 +1,7 @@
 import os
 import subprocess
 import threading
+import time
 
 from octoprint_plabric import config
 from octoprint_plabric.controllers.common import logger as _logger
@@ -59,6 +60,7 @@ class Janus:
 		self._callback = callback
 		self._stream_on_start = False
 		self._enabled = False
+		self._started_at = None
 
 		if system == 'Linux':
 			if machine == 'armv7l':
@@ -89,6 +91,8 @@ class Janus:
 			janus_thread = threading.Thread(target=ll)
 			janus_thread.daemon = True
 			janus_thread.start()
+
+		self._started_at = time.time()
 		self._callback.janus_running()
 
 	def get_video_port(self):
@@ -256,6 +260,8 @@ class Janus:
 
 	def start_video_stream(self):
 		_logger.log('Janus: Start video stream')
+		if time.time() - self._started_at < 4:
+			time.sleep(4)
 		if not self.ws_connected():
 			self._stream_on_start = True
 			self.connect()
