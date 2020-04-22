@@ -69,22 +69,6 @@ class Main:
 		self._thread = threading.Thread(target=f)
 		self._thread.daemon = True
 		self._thread.start()
-		self.monitor_connection()
-
-	def monitor_connection(self):
-		def tt():
-			while self._thread and self._thread.is_alive():
-				time.sleep(5)
-			_logger.log('Thread not running')
-			if self._thread:
-				self._thread = None
-			if self._reconnect:
-				self._init_plabric_socket()
-				self.start()
-
-		self._monitor_thread = threading.Thread(target=tt)
-		self._monitor_thread.daemon = True
-		self._monitor_thread.start()
 
 	def connect(self):
 		self._reconnect = True
