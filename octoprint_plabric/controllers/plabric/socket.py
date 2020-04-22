@@ -44,7 +44,7 @@ class PlabricSocket:
 	def __init__(self, domain, callback):
 		_logger.log('Plabric Socket: Initializing')
 		self._domain = domain
-		self._sio = socketio.Client(reconnection=True, reconnection_delay=5, reconnection_delay_max=30, request_timeout=30)
+		self._sio = socketio.Client(reconnection=True, reconnection_delay=5, reconnection_delay_max=30, request_timeout=30, reconnection_attempts=5)
 		self._add_event_handlers()
 		self._callback = callback
 		self._t = None
