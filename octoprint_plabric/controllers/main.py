@@ -1,6 +1,7 @@
 import threading
 import time
 from enum import Enum
+from random import randrange
 
 from octoprint_plabric import config
 from octoprint_plabric.controllers.common import logger as _logger, utils as _utils
@@ -47,8 +48,8 @@ class Main:
 
 		self.init()
 		self._thread = None
-		self._monitor_thread = None
-		self._reconnect = True
+		self._auto_reconnect = False
+		self._waiting_for_reconnect = False
 
 	def init(self):
 		self._init_plabric_api()
@@ -71,12 +72,25 @@ class Main:
 		self._thread.start()
 
 	def connect(self):
-		self._reconnect = True
 		self.plabric_socket.connect()
 
 	def set_step(self, step):
 		self.step = step
 		self.plugin.update_ui_status()
+
+		if step == Step.ERROR_CONNECTION and not self._waiting_for_reconnect and self._auto_reconnect:
+			seconds = randrange(60, 300)
+			_logger.log('Retry connection in %d seconds' % seconds)
+			self._waiting_for_reconnect = True
+			time.sleep(seconds)
+			self._waiting_for_reconnect = False
+			if self.step == Step.ERROR_CONNECTION:
+				self.plabric_socket.disconnect()
+				self.plabric_socket = None
+				self._init_plabric_socket()
+				self.connect()
+		if step == Step.READY:
+			self._auto_reconnect = True
 
 	def set_error(self, error):
 		self.error = error
