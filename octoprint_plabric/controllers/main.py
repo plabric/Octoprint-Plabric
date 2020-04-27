@@ -48,7 +48,7 @@ class Main:
 
 		self.init()
 		self._thread = None
-		self._auto_reconnect = False
+		self._auto_reconnect = True
 		self._waiting_for_reconnect = False
 
 	def init(self):
@@ -89,8 +89,6 @@ class Main:
 				self.plabric_socket = None
 				self._init_plabric_socket()
 				self.connect()
-		if step == Step.READY:
-			self._auto_reconnect = True
 
 	def set_error(self, error):
 		self.error = error
