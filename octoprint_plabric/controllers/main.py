@@ -204,14 +204,15 @@ class Main:
 		self.plabric_socket = PlabricSocket(domain=config.HOST_PLABRIC_API, callback=Response(self))
 
 	def send_metadata(self):
-		plugin_version = self.plugin.get_version()
-		machine = _utils.machine()
-		system = _utils.system()
-		camera_type = _utils.camera_type()
-		pi_version = _utils.pi_version()
-		self.plabric_api.send_metadata(plabric_api_key=self.plabric_api_key, plugin_version=plugin_version,
-									   machine=machine,
-									   system=system, camera_type=camera_type, pi_version=pi_version, callback=None)
+		if self.plabric_api_key:
+			plugin_version = self.plugin.get_version()
+			machine = _utils.machine()
+			system = _utils.system()
+			camera_type = _utils.camera_type()
+			pi_version = _utils.pi_version()
+			self.plabric_api.send_metadata(plabric_api_key=self.plabric_api_key, plugin_version=plugin_version,
+										   machine=machine,
+										   system=system, camera_type=camera_type, pi_version=pi_version, callback=None)
 
 	def load_webrtc_servers(self):
 		class Response(APIProtocol):
@@ -452,8 +453,8 @@ class Main:
 
 	def disconnect(self):
 		self.set_loading(True)
+		self._auto_reconnect = False
 		_logger.log('Disconnecting Plabric Plugin')
-		self._reconnect = False
 		self.video_streamer.stop()
 		self.octoprint_socket.disconnect()
 		self.plabric_socket.disconnect()
@@ -463,4 +464,7 @@ class Main:
 
 	def reconnect(self):
 		_logger.log('Reconnecting')
-		self.connect()
+		self.plabric_socket.disconnect()
+		self.plabric_socket = None
+		self._init_plabric_socket()
+		self.start()
