@@ -44,25 +44,23 @@ class PlabricSocket:
 	def __init__(self, domain, callback):
 		_logger.log('Plabric Socket: Initializing')
 		self._domain = domain
-		self._sio = socketio.Client(reconnection=True, reconnection_delay=5, reconnection_delay_max=30, request_timeout=30, reconnection_attempts=5)
+		self._sio = socketio.Client(reconnection=False)
 		self._add_event_handlers()
 		self._callback = callback
 		self._t = None
+		self._connecting = False
 
 	def connect(self):
 		try:
-			if not self._sio.connected:
+			if not self._sio.connected and not self._connecting:
+				self._connecting = True
 				_logger.log('Plabric Socket: Connecting')
 				self._sio.connect(self._domain, namespaces=[config.PLABRIC_SOCKET_NAMESPACE])
 				self._sio.wait()
 		except (socketio.exceptions.ConnectionError, ValueError) as e:
 			_logger.warn(e)
+			self._connecting = False
 			self._callback.on_connection_error()
-			if self._t is None:
-				# If first connection attempt fails, socketio not try to reconnect automatically. We try reconnect after 30 seconds
-				_logger.log('Reconnection attempt in 30 seconds')
-				self._t = Timer(30.0, self.reconnect)
-				self._t.start()
 
 	def reconnect(self):
 		self._t = None
@@ -83,6 +81,7 @@ class PlabricSocket:
 		@self._sio.on('connect', namespace=config.PLABRIC_SOCKET_NAMESPACE)
 		def connect():
 			_logger.log('Plabric Socket: Connected')
+			self._connecting = False
 			if self._callback:
 				self._callback.on_connected()
 
