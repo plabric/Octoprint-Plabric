@@ -178,6 +178,9 @@ class Main:
 				self._p.set_step(Step.CONNECTED)
 				self._p.send_metadata()
 
+			def clear_api_key(self):
+				self._p.disable()
+
 			def on_config_done(self):
 				self._p.set_step(Step.READY)
 
