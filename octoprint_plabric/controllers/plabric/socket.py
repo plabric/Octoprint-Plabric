@@ -38,6 +38,9 @@ class PlabricSocketProtocol:
 	def on_connection_error(self):
 		raise NotImplementedError
 
+	def clear_api_key(self):
+		raise NotImplementedError
+
 
 class PlabricSocket:
 
@@ -138,4 +141,10 @@ class PlabricSocket:
 			_logger.log('Plabric Socket: Signaling received')
 			if self._callback:
 				self._callback.on_signaling(_json.loads(data))
+
+		@self._sio.on('clear_api_key', namespace=config.PLABRIC_SOCKET_NAMESPACE)
+		def clear_api_key():
+			_logger.log('Plabric Socket: Clear api key')
+			if self._callback:
+				self._callback.clear_api_key()
 
