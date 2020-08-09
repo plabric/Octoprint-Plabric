@@ -82,8 +82,6 @@ try:
 			is_rpi = True
 except:
 	pass
-if is_rpi and not hasattr(sys, 'pypy_version_info'):
-	plugin_requires += ['picamera==1.13']
 
 setup_parameters = octoprint_setuptools.create_plugin_setup_parameters(
 	identifier=plugin_identifier,
