@@ -32,9 +32,13 @@
     </div>
 
     <div data-bind="visible: plabric.step() == 'qr_read'">
-        <p>{{ _("Scan this QR with Plabric for configure the connection.") }}</p>
-        <p>{{ _("You can find the scanner under printer connections. Follow the steps in the app for connect.") }}</p>
+        <p>{{ _("Scan this QR with Plabric App or paste the Plabric token provided into the Plabric web to set up the connection.") }}</p>
+        <p>{{ _("Follow the steps in the app/web for connect.") }}</p>
         <div data-bind="qrcode: {text: plabric.plabric_token, size: 180}"></div>
+        <div style="position: relative">
+            <p style="margin-top: 16px; font-size: 16px; margin-bottom: 8px; font-weight: bold">{{ _('Plabric token:') }}</p>
+            <p style="font-size: 12px; font-weight: bold; margin-bottom: 32px; padding: 8px 10px; background-color: #dfdfdf" data-bind="text: plabric.plabric_token"></p>
+        </div>
 
         <div data-bind="visible: !plabric.loading()">
             <a class="btn btn-danger" data-bind="click: disable">{{ _("Cancel") }}</a>
