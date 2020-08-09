@@ -209,11 +209,9 @@ class Main:
 			plugin_version = self.plugin.get_version()
 			machine = _utils.machine()
 			system = _utils.system()
-			camera_type = _utils.camera_type()
 			pi_version = _utils.pi_version()
 			self.plabric_api.send_metadata(plabric_api_key=self.plabric_api_key, plugin_version=plugin_version,
-										   machine=machine,
-										   system=system, camera_type=camera_type, pi_version=pi_version, callback=None)
+										   machine=machine, system=system, pi_version=pi_version, callback=None)
 
 	def load_webrtc_servers(self):
 		class Response(APIProtocol):
