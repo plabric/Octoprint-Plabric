@@ -13,16 +13,6 @@ def machine():
 	return platform.machine()
 
 
-def camera_type():
-	try:
-		import picamera
-		if picamera.PiCamera():
-			return "pi_camera"
-	except Exception as e:
-		pass
-	return "usb_camera"
-
-
 def is_raspberry():
 	try:
 		with open('/sys/firmware/devicetree/base/model', 'r') as firmware_model:
