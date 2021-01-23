@@ -1,5 +1,3 @@
-from threading import Timer
-
 import socketio
 
 from octoprint_plabric import config
@@ -47,7 +45,13 @@ class PlabricSocket:
 	def __init__(self, domain, callback):
 		_logger.log('Plabric Socket: Initializing')
 		self._domain = domain
-		self._sio = socketio.Client(reconnection=False)
+		self._sio = socketio.Client(
+			reconnection=True,
+			reconnection_delay=1000,
+			reconnection_delay_max=60 * 1000,
+			reconnection_attempts=5,
+			logger=False,
+		)
 		self._add_event_handlers()
 		self._callback = callback
 		self._t = None
@@ -59,7 +63,6 @@ class PlabricSocket:
 				self._connecting = True
 				_logger.log('Plabric Socket: Connecting')
 				self._sio.connect(self._domain, namespaces=[config.PLABRIC_SOCKET_NAMESPACE])
-				self._sio.wait()
 		except (socketio.exceptions.ConnectionError, ValueError) as e:
 			_logger.warn(e)
 			self._connecting = False
@@ -148,3 +151,14 @@ class PlabricSocket:
 			if self._callback:
 				self._callback.clear_api_key()
 
+		@self._sio.on('connect_failed', namespace=config.PLABRIC_SOCKET_NAMESPACE)
+		def connect_failed():
+			_logger.log('Plabric Socket: Connect failed')
+
+		@self._sio.on('connect_error', namespace=config.PLABRIC_SOCKET_NAMESPACE)
+		def connect_error():
+			_logger.log('Plabric Socket: Connect error')
+
+		@self._sio.on('reconnect', namespace=config.PLABRIC_SOCKET_NAMESPACE)
+		def reconnect():
+			_logger.log('Plabric Socket: Reconnect')
