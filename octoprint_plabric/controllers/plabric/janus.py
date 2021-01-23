@@ -51,7 +51,6 @@ class Janus:
 		self._janus_thread = None
 		self._janus_proc = None
 		self._ws = None
-		self._ws_thread = None
 		self._transaction = None
 		self._session_id = None
 		self._handle_id = None
@@ -61,6 +60,7 @@ class Janus:
 		self._stream_on_start = False
 		self._enabled = False
 		self._started_at = None
+		self._json_servers = None
 
 		if system == 'Linux':
 			if machine == 'armv7l':
@@ -73,7 +73,7 @@ class Janus:
 			self._janus_dir = None
 			_logger.log('Unable to start janus on %s system' % system)
 
-	def run(self, json_servers):
+	def _run_janus(self):
 		if config.JANUS_RUN_LOCAL and self._enabled:
 
 			def ll():
@@ -87,10 +87,9 @@ class Janus:
 				# 		if line:
 				# 			_logger.log('JANUS: ' + line)
 
-			self._configure(json_servers=json_servers)
-			janus_thread = threading.Thread(target=ll)
-			janus_thread.daemon = True
-			janus_thread.start()
+			self._janus_thread = threading.Thread(target=ll)
+			self._janus_thread.daemon = True
+			self._janus_thread.start()
 
 		self._started_at = time.time()
 		self._callback.janus_running()
@@ -98,10 +97,11 @@ class Janus:
 	def get_video_port(self):
 		return self._janus_video_port
 
-	def _configure(self, json_servers):
+	def configure(self, json_servers):
 		if not self._enabled:
 			return
 		_logger.log('Janus: Configuring')
+		self._json_servers = json_servers
 
 		stun_server = None
 		stun_port = None
@@ -128,6 +128,7 @@ class Janus:
 		self._process_config_file(name='janus.transport.http', params={'JANUS_API_PORT': self._janus_api_port})
 		self._process_config_file(name='janus.transport.websockets', params={'JANUS_WS_PORT': self._janus_ws_port})
 		self._process_config_file(name='janus.plugin.streaming', params={'JANUS_VIDEO_PORT': self._janus_video_port})
+		self._run_janus()
 
 	def _process_config_file(self, name, params):
 		janus_conf_template = os.path.join(self._janus_dir, 'etc/janus/%s.jcfg.template' % name)
@@ -149,11 +150,12 @@ class Janus:
 					fout.write(line)
 
 	def connect(self):
-		if self._enabled:
+		if self._enabled and not self.ws_connected():
 			_logger.log('Janus: Connecting')
 
 			def _on_error(ws, error):
 				_logger.log('Janus Error: %s' % error)
+				self._reset_janus_ws()
 
 			def _on_message(ws, msg):
 				self._process_msg(msg)
@@ -161,16 +163,24 @@ class Janus:
 			def _on_close(ws):
 				_logger.log('Janus: Ws Closed')
 				self._callback.disconnected()
+				self._reset_janus_ws()
 
 			def _on_open(ws):
 				_logger.log('Janus: Ws Opened')
 				self._create_session()
 
 			try:
+				if self._janus_thread is None:
+					self._run_janus()
+
+				if self._started_at is not None and time.time() - self._started_at < 4:
+					time.sleep(2)
+
 				self._ws = websocket.WebSocketApp(self._url, on_open=_on_open, on_message=_on_message, on_close=_on_close, on_error=_on_error, subprotocols=['janus-protocol'])
-				self._ws_thread = threading.Thread(target=self._ws.run_forever)
-				self._ws_thread.daemon = True
-				self._ws_thread.start()
+				_ws_thread = threading.Thread(target=self._ws.run_forever)
+				_ws_thread.daemon = True
+				_ws_thread.start()
+
 			except Exception as e:
 				_logger.warn(e)
 
@@ -179,13 +189,22 @@ class Janus:
 
 	def disconnect(self):
 		_logger.log('Janus: Disconnecting')
+		self._disconnect_janus_ws()
+		self._disconnect_janus()
 
+	def _disconnect_janus_ws(self):
 		if self._ws:
-			self._ws.close()
-			self._ws.keep_running = False
-			self._ws_thread = None
+			try:
+				self._ws.close()
+				self._reset_janus_ws()
+			except Exception:
+				pass
+
+	def _reset_janus_ws(self):
+		if self._ws:
 			self._ws = None
 
+	def _disconnect_janus(self):
 		self._paused = False
 		self._stream_on_start = False
 
@@ -262,8 +281,6 @@ class Janus:
 
 	def start_video_stream(self):
 		_logger.log('Janus: Start video stream')
-		if time.time() - self._started_at < 4:
-			time.sleep(4)
 		if not self.ws_connected():
 			self._stream_on_start = True
 			self.connect()
