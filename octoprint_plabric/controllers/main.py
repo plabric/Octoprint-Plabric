@@ -47,9 +47,8 @@ class Main:
 		self.octoprint_api_key = None
 
 		self.init()
-		self._thread = None
-		self._auto_reconnect = True
 		self._waiting_for_reconnect = False
+		self.retry_time = randrange(30, 120)
 
 	def init(self):
 		self._init_plabric_api()
@@ -67,9 +66,9 @@ class Main:
 		else:
 			f = self.connect
 
-		self._thread = threading.Thread(target=f)
-		self._thread.daemon = True
-		self._thread.start()
+		thread = threading.Thread(target=f)
+		thread.daemon = True
+		thread.start()
 
 	def connect(self):
 		self.plabric_socket.connect()
@@ -78,17 +77,26 @@ class Main:
 		self.step = step
 		self.plugin.update_ui_status()
 
-		if step == Step.ERROR_CONNECTION and not self._waiting_for_reconnect and self._auto_reconnect:
-			seconds = randrange(60, 300)
-			_logger.log('Retry connection in %d seconds' % seconds)
+		if step == Step.ERROR_CONNECTION and not self._waiting_for_reconnect:
+			_logger.log('Retry connection in %d seconds' % self.retry_time)
 			self._waiting_for_reconnect = True
-			time.sleep(seconds)
-			self._waiting_for_reconnect = False
-			if self.step == Step.ERROR_CONNECTION:
-				self.plabric_socket.disconnect()
-				self.plabric_socket = None
-				self._init_plabric_socket()
-				self.connect()
+
+			thread = threading.Thread(target=self.retry_in_seconds, args=(self.retry_time,))
+			thread.daemon = True
+			thread.start()
+
+		if step == Step.CONNECTED or step == Step.READY:
+			self.retry_time = randrange(30, 120)
+
+	def retry_in_seconds(self, seconds=10):
+		time.sleep(seconds)
+		self._waiting_for_reconnect = False
+		if self.step == Step.ERROR_CONNECTION:
+			self.retry_time = self.retry_time * 3 if self.retry_time < 360 else randrange(360, 720)
+			self.plabric_socket.disconnect()
+			self.plabric_socket = None
+			self._init_plabric_socket()
+			self.connect()
 
 	def set_error(self, error):
 		self.error = error
@@ -219,7 +227,7 @@ class Main:
 				self._p = p
 
 			def on_succeed(self, data):
-				self._p.plabric_webrtc.run(json_servers=data)
+				self._p.plabric_webrtc.configure(json_servers=data)
 
 			def on_error(self, error):
 				self._p.set_error(error)
@@ -452,7 +460,6 @@ class Main:
 
 	def disconnect(self):
 		self.set_loading(True)
-		self._auto_reconnect = False
 		_logger.log('Disconnecting Plabric Plugin')
 		self.video_streamer.stop()
 		self.octoprint_socket.disconnect()
