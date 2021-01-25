@@ -46,10 +46,7 @@ class PlabricSocket:
 		_logger.log('Plabric Socket: Initializing')
 		self._domain = domain
 		self._sio = socketio.Client(
-			reconnection=True,
-			reconnection_delay=1000,
-			reconnection_delay_max=60 * 1000,
-			reconnection_attempts=5,
+			reconnection=False,
 			logger=False,
 		)
 		self._add_event_handlers()
